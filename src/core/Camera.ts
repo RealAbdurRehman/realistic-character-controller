@@ -16,6 +16,8 @@ export default class Camera {
   }
   private init(): void {
     this.instance.position.z = 10;
+    this.instance.position.y = 5;
+    this.instance.lookAt(new THREE.Vector3());
   }
   public resize(): void {
     this.instance.aspect = window.innerWidth / window.innerHeight;
