@@ -1,6 +1,6 @@
-import InputConfig from "./InputConfig";
+import * as THREE from "three";
 
-import type { Direction } from "../types/Vector";
+import InputConfig from "./InputConfig";
 
 export default class Input {
   private readonly keys = new Set<string>();
@@ -17,18 +17,18 @@ export default class Input {
   private keyUp = (event: KeyboardEvent): void => {
     this.keys.delete(event.code);
   };
-  public getDirection(): Direction {
-    const direction = { x: 0, z: 0 };
+  public getDirection(): THREE.Vector2 {
+    const direction = new THREE.Vector2();
 
-    if (this.keys.has(InputConfig.movement.forward)) direction.z -= 1;
-    if (this.keys.has(InputConfig.movement.backward)) direction.z += 1;
+    if (this.keys.has(InputConfig.movement.forward)) direction.y += 1;
+    if (this.keys.has(InputConfig.movement.backward)) direction.y -= 1;
     if (this.keys.has(InputConfig.movement.left)) direction.x -= 1;
     if (this.keys.has(InputConfig.movement.right)) direction.x += 1;
 
-    const length = Math.hypot(direction.x, direction.z);
+    const length = Math.hypot(direction.x, direction.y);
     if (length > 0) {
       direction.x /= length;
-      direction.z /= length;
+      direction.y /= length;
     }
 
     return direction;

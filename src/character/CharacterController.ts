@@ -4,8 +4,6 @@ import RAPIER from "@dimforge/rapier3d-compat";
 import GameConfig from "../config/GameConfig";
 import CharacterConfig from "./CharacterConfig";
 
-import type { Direction } from "../types/Vector";
-
 export default class CharacterController {
   private readonly collider: RAPIER.Collider;
   private readonly controller: RAPIER.KinematicCharacterController;
@@ -40,7 +38,7 @@ export default class CharacterController {
     if (this.grounded && this.verticalVelocity < 0) this.verticalVelocity = 0;
     this.verticalVelocity += GameConfig.physics.gravity.y * delta;
   }
-  private getMovement(direction: Direction, delta: number): THREE.Vector3 {
+  private getMovement(direction: THREE.Vector3, delta: number): THREE.Vector3 {
     const speed = CharacterConfig.movement.speed;
     return new THREE.Vector3(
       direction.x * speed * delta,
@@ -56,7 +54,7 @@ export default class CharacterController {
       z: this.position.z + correctedMovement.z,
     });
   }
-  public fixedUpdate(direction: Direction, delta: number): void {
+  public fixedUpdate(direction: THREE.Vector3, delta: number): void {
     this.previousPosition.copy(this.position);
 
     this.updateGravity(delta);

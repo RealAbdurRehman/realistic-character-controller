@@ -67,7 +67,10 @@ export default class Game {
     this.physicsDebug.update();
   }
   private fixedUpdate(): void {
-    this.character.fixedUpdate(this.input.getDirection(), this.time.fixedDelta);
+    const input = this.input.getDirection();
+    const movement = this.cameraController.getMovementDirection(input);
+    this.character.fixedUpdate(movement, this.time.fixedDelta);
+
     this.physics.step();
   }
   private animate = (timestamp: number): void => {
@@ -85,6 +88,9 @@ export default class Game {
   };
   private addEventListeners(): void {
     window.addEventListener("resize", this.resize);
+    document.body.addEventListener("click", () =>
+      document.body.requestPointerLock(),
+    );
   }
   public init(): void {
     console.log(this.ground);
