@@ -29,4 +29,7 @@ export default class Time {
   public get elapsed(): number {
     return this._elapsed;
   }
+  public get alpha(): number {
+    return this._accumulator / this.fixedDelta;
+  }
 }

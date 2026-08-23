@@ -12,6 +12,8 @@ import Ground from "../environment/ground";
 import Input from "../input/Input";
 import CharacterController from "../character/CharacterController";
 
+import GameConfig from "../config/GameConfig";
+
 export default class Game {
   private readonly scene: Scene;
   private readonly camera: Camera;
@@ -42,7 +44,10 @@ export default class Game {
     this.ground = new Ground(this.scene.instance, this.physics.instance);
 
     this.input = new Input();
-    this.character = new CharacterController(this.physics.instance);
+    this.character = new CharacterController(
+      this.physics.instance,
+      GameConfig.spawn.player,
+    );
 
     this.addEventListeners();
   }
@@ -50,7 +55,8 @@ export default class Game {
     this.renderer.render(this.scene.instance, this.camera.instance);
   }
   private update(): void {
-    this.cameraController.update(this.character.position);
+    const position = this.character.getInterpolatedPosition(this.time.alpha);
+    this.cameraController.update(position);
     this.physicsDebug.update();
   }
   private fixedUpdate(): void {

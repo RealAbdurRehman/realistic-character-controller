@@ -1,23 +1,27 @@
+import * as THREE from "three";
 import RAPIER from "@dimforge/rapier3d-compat";
 
 import GameConfig from "../config/GameConfig";
 import CharacterConfig from "./CharacterConfig";
 
-import type { Direction, Vector3 } from "../types/Vector";
+import type { Direction } from "../types/Vector";
 
 export default class CharacterController {
   private readonly collider: RAPIER.Collider;
   private readonly controller: RAPIER.KinematicCharacterController;
 
   private verticalVelocity = 0;
-  constructor(world: RAPIER.World) {
+  private previousPosition = new THREE.Vector3();
+  constructor(world: RAPIER.World, position: THREE.Vector3) {
+    this.previousPosition.copy(position);
+
     this.controller = this.createController(world);
     this.collider = this.createCollider(world);
 
-    this.init();
+    this.init(position);
   }
-  private init(): void {
-    this.collider.setTranslation({ x: 0, y: 2, z: 0 });
+  private init(position: THREE.Vector3): void {
+    this.collider.setTranslation(position);
   }
   private createController(
     world: RAPIER.World,
@@ -36,13 +40,13 @@ export default class CharacterController {
     if (this.grounded && this.verticalVelocity < 0) this.verticalVelocity = 0;
     this.verticalVelocity += GameConfig.physics.gravity.y * delta;
   }
-  private getMovement(direction: Direction, delta: number): Vector3 {
+  private getMovement(direction: Direction, delta: number): THREE.Vector3 {
     const speed = CharacterConfig.movement.speed;
-    return {
-      x: direction.x * speed * delta,
-      y: this.verticalVelocity * delta,
-      z: direction.z * speed * delta,
-    };
+    return new THREE.Vector3(
+      direction.x * speed * delta,
+      this.verticalVelocity * delta,
+      direction.z * speed * delta,
+    );
   }
   private applyMovement(): void {
     const correctedMovement = this.controller.computedMovement();
@@ -53,6 +57,8 @@ export default class CharacterController {
     });
   }
   public fixedUpdate(direction: Direction, delta: number): void {
+    this.previousPosition.copy(this.position);
+
     this.updateGravity(delta);
 
     const movement = this.getMovement(direction, delta);
@@ -63,8 +69,11 @@ export default class CharacterController {
   public get grounded(): boolean {
     return this.controller.computedGrounded();
   }
-  public get position(): Vector3 {
+  public get position(): THREE.Vector3 {
     const position = this.collider.translation();
-    return { x: position.x, y: position.y, z: position.z };
+    return new THREE.Vector3(position.x, position.y, position.z);
+  }
+  public getInterpolatedPosition(alpha: number): THREE.Vector3 {
+    return this.previousPosition.clone().lerp(this.position, alpha);
   }
 }
