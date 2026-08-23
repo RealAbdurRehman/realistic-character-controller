@@ -1,5 +1,6 @@
 import Scene from "./Scene";
-import Camera from "./Camera";
+import Camera from "../camera/Camera";
+import CameraController from "../camera/CameraController";
 import Renderer from "./Renderer";
 
 import Time from "./Time";
@@ -14,6 +15,7 @@ import CharacterController from "../character/CharacterController";
 export default class Game {
   private readonly scene: Scene;
   private readonly camera: Camera;
+  private readonly cameraController: CameraController;
   private readonly renderer: Renderer;
 
   private readonly time: Time;
@@ -27,6 +29,7 @@ export default class Game {
   constructor() {
     this.scene = new Scene();
     this.camera = new Camera();
+    this.cameraController = new CameraController(this.camera);
     this.renderer = new Renderer();
 
     this.time = new Time();
@@ -47,6 +50,7 @@ export default class Game {
     this.renderer.render(this.scene.instance, this.camera.instance);
   }
   private update(): void {
+    this.cameraController.update(this.character.position);
     this.physicsDebug.update();
   }
   private fixedUpdate(): void {

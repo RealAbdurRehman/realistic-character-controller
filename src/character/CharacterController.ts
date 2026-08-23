@@ -45,12 +45,11 @@ export default class CharacterController {
     };
   }
   private applyMovement(): void {
-    const position = this.collider.translation();
     const correctedMovement = this.controller.computedMovement();
     this.collider.setTranslation({
-      x: position.x + correctedMovement.x,
-      y: position.y + correctedMovement.y,
-      z: position.z + correctedMovement.z,
+      x: this.position.x + correctedMovement.x,
+      y: this.position.y + correctedMovement.y,
+      z: this.position.z + correctedMovement.z,
     });
   }
   public fixedUpdate(direction: Direction, delta: number): void {
@@ -63,5 +62,9 @@ export default class CharacterController {
   }
   public get grounded(): boolean {
     return this.controller.computedGrounded();
+  }
+  public get position(): Vector3 {
+    const position = this.collider.translation();
+    return { x: position.x, y: position.y, z: position.z };
   }
 }
