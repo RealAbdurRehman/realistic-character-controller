@@ -9,12 +9,15 @@
     "preview": "vite preview"
   },
   "devDependencies": {
-    "@types/three": "^0.185.4",
+    "@types/three": "^0.185.1",
     "typescript": "~6.0.2",
     "vite": "^8.2.0"
   },
   "dependencies": {
     "@dimforge/rapier3d-compat": "^0.20.0",
     "three": "^0.185.1"
+  },
+  "overrides": {
+    "@dimforge/rapier3d-compat": "$@dimforge/rapier3d-compat"
   }
 }

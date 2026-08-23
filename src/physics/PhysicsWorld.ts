@@ -1,11 +1,11 @@
 import RAPIER from "@dimforge/rapier3d-compat";
 
-import { GameConfig } from "../config/GameConfig";
+import GameConfig from "../config/GameConfig";
 
 export default class PhysicsWorld {
-  public readonly world: RAPIER.World;
+  public readonly instance: RAPIER.World;
   constructor() {
-    this.world = new RAPIER.World(
+    this.instance = new RAPIER.World(
       new RAPIER.Vector3(
         GameConfig.physics.gravity.x,
         GameConfig.physics.gravity.y,
@@ -14,6 +14,6 @@ export default class PhysicsWorld {
     );
   }
   public step(): void {
-    this.world.step();
+    this.instance.step();
   }
 }
