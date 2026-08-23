@@ -7,7 +7,8 @@ import Time from "./Time";
 import PhysicsWorld from "../physics/PhysicsWorld";
 import PhysicsDebug from "../debug/PhysicsDebug";
 
-import Ground from "../environment/ground";
+import Ground from "../environment/Ground";
+import TestEnvironment from "../environment/TestEnvironment";
 
 import Input from "../input/Input";
 import CharacterController from "../character/CharacterController";
@@ -26,6 +27,7 @@ export default class Game {
   private readonly physicsDebug: PhysicsDebug;
 
   private readonly ground: Ground;
+  private readonly testEnvironment: TestEnvironment;
 
   private readonly input: Input;
   private readonly character: CharacterController;
@@ -44,6 +46,10 @@ export default class Game {
     );
 
     this.ground = new Ground(this.scene.instance, this.physics.instance);
+    this.testEnvironment = new TestEnvironment(
+      this.scene.instance,
+      this.physics.instance,
+    );
 
     this.input = new Input();
     this.character = new CharacterController(
@@ -94,6 +100,7 @@ export default class Game {
   }
   public init(): void {
     console.log(this.ground);
+    console.log(this.testEnvironment);
     requestAnimationFrame(this.animate);
   }
 }
