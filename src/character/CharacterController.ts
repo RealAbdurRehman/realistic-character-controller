@@ -17,7 +17,7 @@ export default class CharacterController {
     this.init();
   }
   private init(): void {
-    this.collider.setTranslation({ x: 0, y: 1, z: 0 });
+    this.collider.setTranslation({ x: 0, y: 2, z: 0 });
   }
   private createController(
     world: RAPIER.World,

@@ -4,7 +4,7 @@ export default class Time {
   private _accumulator = 0;
   private lastTime = 0;
 
-  private readonly fixedDelta = 1 / 60;
+  public readonly fixedDelta = 1 / 60;
   public update(timestamp: number): void {
     if (this.lastTime <= 0) {
       this.lastTime = timestamp;

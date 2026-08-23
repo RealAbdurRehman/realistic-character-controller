@@ -8,6 +8,9 @@ import PhysicsDebug from "../debug/PhysicsDebug";
 
 import Ground from "../environment/ground";
 
+import Input from "../input/Input";
+import CharacterController from "../character/CharacterController";
+
 export default class Game {
   private readonly scene: Scene;
   private readonly camera: Camera;
@@ -18,6 +21,9 @@ export default class Game {
   private readonly physicsDebug: PhysicsDebug;
 
   private readonly ground: Ground;
+
+  private readonly input: Input;
+  private readonly character: CharacterController;
   constructor() {
     this.scene = new Scene();
     this.camera = new Camera();
@@ -32,6 +38,9 @@ export default class Game {
 
     this.ground = new Ground(this.scene.instance, this.physics.instance);
 
+    this.input = new Input();
+    this.character = new CharacterController(this.physics.instance);
+
     this.addEventListeners();
   }
   private render(): void {
@@ -41,6 +50,7 @@ export default class Game {
     this.physicsDebug.update();
   }
   private fixedUpdate(): void {
+    this.character.fixedUpdate(this.input.getDirection(), this.time.fixedDelta);
     this.physics.step();
   }
   private animate = (timestamp: number): void => {
