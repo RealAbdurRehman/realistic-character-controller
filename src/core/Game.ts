@@ -11,6 +11,7 @@ import Ground from "../environment/ground";
 
 import Input from "../input/Input";
 import CharacterController from "../character/CharacterController";
+import CharacterModel from "../character/CharacterModel";
 
 import GameConfig from "../config/GameConfig";
 
@@ -28,6 +29,7 @@ export default class Game {
 
   private readonly input: Input;
   private readonly character: CharacterController;
+  private readonly characterModel: CharacterModel;
   constructor() {
     this.scene = new Scene();
     this.camera = new Camera();
@@ -49,6 +51,8 @@ export default class Game {
       GameConfig.spawn.player,
     );
 
+    this.characterModel = new CharacterModel(this.scene.instance);
+
     this.addEventListeners();
   }
   private render(): void {
@@ -56,7 +60,10 @@ export default class Game {
   }
   private update(): void {
     const position = this.character.getInterpolatedPosition(this.time.alpha);
+
     this.cameraController.update(position);
+    this.characterModel.update(position);
+
     this.physicsDebug.update();
   }
   private fixedUpdate(): void {
