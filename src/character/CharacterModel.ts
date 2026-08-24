@@ -11,7 +11,8 @@ export default class CharacterModel {
     const material = new THREE.MeshStandardMaterial();
     return new THREE.Mesh(geometry, material);
   }
-  public update(position: THREE.Vector3): void {
+  public update(position: THREE.Vector3, forward: THREE.Vector3): void {
     this.instance.position.copy(position);
+    this.instance.rotation.y = Math.atan2(forward.x, forward.z);
   }
 }

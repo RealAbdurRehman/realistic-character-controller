@@ -43,13 +43,12 @@ export default class CameraController {
   public update(target: THREE.Vector3): void {
     this.follow(target);
   }
+  public getForwardDirection(): THREE.Vector3 {
+    return new THREE.Vector3(-Math.sin(this.yaw), 0, -Math.cos(this.yaw));
+  }
   public getMovementDirection(input: THREE.Vector2): THREE.Vector3 {
+    const forward = this.getForwardDirection();
     const right = new THREE.Vector3(Math.cos(this.yaw), 0, -Math.sin(this.yaw));
-    const forward = new THREE.Vector3(
-      -Math.sin(this.yaw),
-      0,
-      -Math.cos(this.yaw),
-    );
 
     return new THREE.Vector3()
       .addScaledVector(forward, input.y)

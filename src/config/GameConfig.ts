@@ -10,7 +10,7 @@ const GameConfig = {
     distance: 6,
   },
   physics: { gravity: new THREE.Vector3(0, -9.81, 0) },
-  debug: { physics: true },
+  debug: { physics: false },
   spawn: {
     player: new THREE.Vector3(0, 2, 0),
   },

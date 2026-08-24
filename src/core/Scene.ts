@@ -15,9 +15,5 @@ export default class Scene {
     const keyLight = new THREE.DirectionalLight(0xffffff, 1.3);
     keyLight.position.set(4, 6, 5);
     this.instance.add(keyLight);
-
-    const rimLight = new THREE.DirectionalLight(0xffffff, 2.0);
-    rimLight.position.set(-5, 2, -6);
-    this.instance.add(rimLight);
   }
 }
