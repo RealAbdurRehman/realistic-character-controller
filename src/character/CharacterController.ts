@@ -24,9 +24,24 @@ export default class CharacterController {
   private createController(
     world: RAPIER.World,
   ): RAPIER.KinematicCharacterController {
-    const controller = world.createCharacterController(0.01);
-    controller.enableAutostep(0.5, 0.2, true);
-    controller.enableSnapToGround(0.5);
+    const controller = world.createCharacterController(
+      CharacterConfig.controller.offset,
+    );
+
+    controller.enableAutostep(
+      CharacterConfig.controller.autostep.maxHeight,
+      CharacterConfig.controller.autostep.minWidth,
+      true,
+    );
+
+    controller.enableSnapToGround(CharacterConfig.controller.snapToGround);
+
+    controller.setMaxSlopeClimbAngle(
+      THREE.MathUtils.degToRad(CharacterConfig.slope.maxClimbAngle),
+    );
+    controller.setMinSlopeSlideAngle(
+      THREE.MathUtils.degToRad(CharacterConfig.slope.minSlideAngle),
+    );
 
     return controller;
   }
@@ -47,11 +62,12 @@ export default class CharacterController {
     );
   }
   private applyMovement(): void {
+    const position = this.position;
     const correctedMovement = this.controller.computedMovement();
     this.collider.setTranslation({
-      x: this.position.x + correctedMovement.x,
-      y: this.position.y + correctedMovement.y,
-      z: this.position.z + correctedMovement.z,
+      x: position.x + correctedMovement.x,
+      y: position.y + correctedMovement.y,
+      z: position.z + correctedMovement.z,
     });
   }
   public fixedUpdate(direction: THREE.Vector3, delta: number): void {
