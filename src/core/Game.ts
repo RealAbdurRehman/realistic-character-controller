@@ -11,8 +11,7 @@ import Ground from "../environment/Ground";
 import TestEnvironment from "../environment/TestEnvironment";
 
 import Input from "../input/Input";
-import CharacterController from "../character/CharacterController";
-import CharacterModel from "../character/CharacterModel";
+import Character from "../character/Character";
 
 import GameConfig from "../config/GameConfig";
 
@@ -30,8 +29,7 @@ export default class Game {
   private readonly testEnvironment: TestEnvironment;
 
   private readonly input: Input;
-  private readonly character: CharacterController;
-  private readonly characterModel: CharacterModel;
+  private readonly character: Character;
   constructor() {
     this.scene = new Scene();
     this.camera = new Camera();
@@ -52,12 +50,11 @@ export default class Game {
     );
 
     this.input = new Input();
-    this.character = new CharacterController(
+    this.character = new Character(
+      this.scene.instance,
       this.physics.instance,
       GameConfig.spawn.player,
     );
-
-    this.characterModel = new CharacterModel(this.scene.instance);
 
     this.addEventListeners();
   }
@@ -69,7 +66,7 @@ export default class Game {
     const forward = this.cameraController.getForwardDirection();
 
     this.cameraController.update(position);
-    this.characterModel.update(position, forward);
+    this.character.update(this.time.alpha, forward);
 
     this.physicsDebug.update();
   }

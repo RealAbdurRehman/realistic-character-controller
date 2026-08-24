@@ -1,5 +1,5 @@
 const CharacterConfig = {
-  movement: { speed: 5 },
+  movement: { speed: 5, acceleration: 8, deceleration: 10 },
   slope: {
     maxClimbAngle: 45,
     minSlideAngle: 30,
