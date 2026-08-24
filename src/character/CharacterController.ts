@@ -3,6 +3,7 @@ import RAPIER from "@dimforge/rapier3d-compat";
 
 import CharacterMotor from "./CharacterMotor";
 import CharacterPhysics from "./CharacterPhysics";
+import type CharacterInput from "./CharacterInput";
 
 export default class CharacterController {
   private readonly motor: CharacterMotor;
@@ -13,10 +14,10 @@ export default class CharacterController {
     this.physics = new CharacterPhysics(world, position);
     this.previousPosition.copy(this.physics.position);
   }
-  public fixedUpdate(direction: THREE.Vector3, delta: number): void {
+  public fixedUpdate(input: CharacterInput, delta: number): void {
     this.previousPosition.copy(this.physics.position);
 
-    const desiredMovement = this.motor.fixedUpdate(direction, delta);
+    const desiredMovement = this.motor.fixedUpdate(input, delta);
     this.physics.move(desiredMovement);
 
     this.motor.setGrounded(this.physics.grounded);

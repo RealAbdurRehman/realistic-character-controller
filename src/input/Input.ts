@@ -1,6 +1,7 @@
 import * as THREE from "three";
 
 import InputConfig from "./InputConfig";
+import type InputState from "./InputState";
 
 export default class Input {
   private readonly keys = new Set<string>();
@@ -17,7 +18,7 @@ export default class Input {
   private keyUp = (event: KeyboardEvent): void => {
     this.keys.delete(event.code);
   };
-  public getDirection(): THREE.Vector2 {
+  public getInput(): InputState {
     const direction = new THREE.Vector2();
 
     if (this.keys.has(InputConfig.movement.forward)) direction.y += 1;
@@ -31,6 +32,9 @@ export default class Input {
       direction.y /= length;
     }
 
-    return direction;
+    return {
+      direction,
+      sprinting: this.keys.has(InputConfig.sprint),
+    };
   }
 }

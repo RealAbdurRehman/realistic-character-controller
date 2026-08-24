@@ -2,6 +2,7 @@ import * as THREE from "three";
 
 import GameConfig from "../config/GameConfig";
 import CharacterConfig from "./CharacterConfig";
+import type CharacterInput from "./CharacterInput";
 
 export default class CharacterMotor {
   private grounded = false;
@@ -11,17 +12,20 @@ export default class CharacterMotor {
     if (this.grounded && this.verticalVelocity < 0) this.verticalVelocity = 0;
     this.verticalVelocity += GameConfig.physics.gravity.y * delta;
   }
-  private updateHorizontalVelocity(
-    direction: THREE.Vector3,
-    delta: number,
-  ): void {
-    const targetVelocity = direction
-      .clone()
-      .multiplyScalar(CharacterConfig.movement.speed);
+  private updateHorizontalVelocity(input: CharacterInput, delta: number): void {
+    const speed = input.sprinting
+      ? CharacterConfig.movement.sprintSpeed
+      : CharacterConfig.movement.speed;
+
+    const targetVelocity = new THREE.Vector3(
+      input.direction.x,
+      0,
+      input.direction.y,
+    ).multiplyScalar(speed);
 
     const acceleration = CharacterConfig.movement.acceleration;
     const deceleration = CharacterConfig.movement.deceleration;
-    const rate = direction.lengthSq() > 0 ? acceleration : deceleration;
+    const rate = input.direction.lengthSq() > 0 ? acceleration : deceleration;
 
     this.horizontalVelocity.lerp(targetVelocity, 1 - Math.exp(-rate * delta));
   }
@@ -32,9 +36,9 @@ export default class CharacterMotor {
       this.horizontalVelocity.z * delta,
     );
   }
-  public fixedUpdate(direction: THREE.Vector3, delta: number): THREE.Vector3 {
+  public fixedUpdate(input: CharacterInput, delta: number): THREE.Vector3 {
     this.updateGravity(delta);
-    this.updateHorizontalVelocity(direction, delta);
+    this.updateHorizontalVelocity(input, delta);
 
     return this.getMovement(delta);
   }

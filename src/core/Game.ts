@@ -12,6 +12,7 @@ import TestEnvironment from "../environment/TestEnvironment";
 
 import Input from "../input/Input";
 import Character from "../character/Character";
+import type CharacterInput from "../character/CharacterInput";
 
 import GameConfig from "../config/GameConfig";
 
@@ -71,9 +72,16 @@ export default class Game {
     this.physicsDebug.update();
   }
   private fixedUpdate(): void {
-    const input = this.input.getDirection();
-    const movement = this.cameraController.getMovementDirection(input);
-    this.character.fixedUpdate(movement, this.time.fixedDelta);
+    const input = this.input.getInput();
+    const movement = this.cameraController.getMovementDirection(
+      input.direction,
+    );
+
+    const characterInput: CharacterInput = {
+      direction: movement,
+      sprinting: input.sprinting,
+    };
+    this.character.fixedUpdate(characterInput, this.time.fixedDelta);
 
     this.physics.step();
   }
