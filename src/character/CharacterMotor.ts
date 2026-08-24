@@ -16,12 +16,7 @@ export default class CharacterMotor {
     const speed = input.sprinting
       ? CharacterConfig.movement.sprintSpeed
       : CharacterConfig.movement.speed;
-
-    const targetVelocity = new THREE.Vector3(
-      input.direction.x,
-      0,
-      input.direction.y,
-    ).multiplyScalar(speed);
+    const targetVelocity = input.direction.clone().multiplyScalar(speed);
 
     const acceleration = CharacterConfig.movement.acceleration;
     const deceleration = CharacterConfig.movement.deceleration;
