@@ -16,10 +16,7 @@ export default class CharacterController {
   }
   public fixedUpdate(input: CharacterInput, delta: number): void {
     this.previousPosition.copy(this.physics.position);
-
-    const desiredMovement = this.motor.fixedUpdate(input, delta);
-    this.physics.move(desiredMovement);
-
+    this.physics.move(this.motor.fixedUpdate(input, delta));
     this.motor.setGrounded(this.physics.grounded);
   }
   public getInterpolatedPosition(alpha: number): THREE.Vector3 {

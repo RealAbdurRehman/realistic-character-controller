@@ -6,6 +6,7 @@ const InputConfig = {
     right: "KeyD",
   },
   sprint: "ShiftLeft",
+  jump: "Space",
 } as const;
 
 export default InputConfig;

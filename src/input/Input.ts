@@ -5,6 +5,7 @@ import type InputState from "./InputState";
 
 export default class Input {
   private readonly keys = new Set<string>();
+  private readonly previousKeys = new Set<string>();
   constructor() {
     this.addEventListeners();
   }
@@ -18,6 +19,9 @@ export default class Input {
   private keyUp = (event: KeyboardEvent): void => {
     this.keys.delete(event.code);
   };
+  private isJustPressed(key: string): boolean {
+    return this.keys.has(key) && !this.previousKeys.has(key);
+  }
   public getInput(): InputState {
     const direction = new THREE.Vector2();
 
@@ -35,6 +39,11 @@ export default class Input {
     return {
       direction,
       sprinting: this.keys.has(InputConfig.sprint),
+      jumping: this.isJustPressed(InputConfig.jump),
     };
+  }
+  public update(): void {
+    this.previousKeys.clear();
+    for (const key of this.keys) this.previousKeys.add(key);
   }
 }

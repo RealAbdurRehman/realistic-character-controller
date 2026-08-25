@@ -70,6 +70,7 @@ export default class Game {
     this.character.update(this.time.alpha, forward);
 
     this.physicsDebug.update();
+    this.input.update();
   }
   private fixedUpdate(): void {
     const input = this.input.getInput();
@@ -80,6 +81,7 @@ export default class Game {
     const characterInput: CharacterInput = {
       direction: movement,
       sprinting: input.sprinting,
+      jumping: input.jumping,
     };
     this.character.fixedUpdate(characterInput, this.time.fixedDelta);
 

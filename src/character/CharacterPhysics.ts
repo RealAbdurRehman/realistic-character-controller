@@ -44,10 +44,6 @@ export default class CharacterPhysics {
     const colliderDesc = RAPIER.ColliderDesc.capsule(1, 0.5);
     return world.createCollider(colliderDesc);
   }
-  public move(movement: THREE.Vector3): void {
-    this.controller.computeColliderMovement(this.collider, movement);
-    this.applyMovement();
-  }
   private applyMovement(): void {
     const position = this.position;
     const correctedMovement = this.controller.computedMovement();
@@ -56,6 +52,10 @@ export default class CharacterPhysics {
       y: position.y + correctedMovement.y,
       z: position.z + correctedMovement.z,
     });
+  }
+  public move(movement: THREE.Vector3): void {
+    this.controller.computeColliderMovement(this.collider, movement);
+    this.applyMovement();
   }
   public get grounded(): boolean {
     return this.controller.computedGrounded();
