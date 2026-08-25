@@ -7,6 +7,7 @@ export default class TestEnvironment {
     this.createStairs(scene, world);
     this.createStep(scene, world);
     this.createWall(scene, world);
+    this.createCeilingArea(scene, world);
   }
   private createBox(
     scene: THREE.Scene,
@@ -92,6 +93,15 @@ export default class TestEnvironment {
       world,
       new THREE.Vector3(0, 1.5, 5),
       new THREE.Vector3(5, 3, 0.5),
+    );
+  }
+  private createCeilingArea(scene: THREE.Scene, world: RAPIER.World): void {
+    const ceilingHeight = 3.75;
+    this.createBox(
+      scene,
+      world,
+      new THREE.Vector3(0, ceilingHeight, -15),
+      new THREE.Vector3(6, 0.5, 6),
     );
   }
 }

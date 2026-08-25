@@ -1,5 +1,11 @@
 const CharacterConfig = {
-  movement: { speed: 5, sprintSpeed: 8, acceleration: 8, deceleration: 10 },
+  movement: {
+    speed: 5,
+    sprintSpeed: 8,
+    acceleration: 8,
+    deceleration: 10,
+    restVelocityThreshold: 0.05,
+  },
   jump: { force: 8 },
   slope: {
     maxClimbAngle: 45,

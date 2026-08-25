@@ -74,12 +74,14 @@ export default class Game {
   }
   private fixedUpdate(): void {
     const input = this.input.getInput();
+    const forward = this.cameraController.getForwardDirection();
     const movement = this.cameraController.getMovementDirection(
       input.direction,
     );
 
     const characterInput: CharacterInput = {
       direction: movement,
+      facing: forward,
       sprinting: input.sprinting,
       jumping: input.jumping,
     };

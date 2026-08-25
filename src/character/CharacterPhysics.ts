@@ -64,4 +64,35 @@ export default class CharacterPhysics {
     const position = this.collider.translation();
     return new THREE.Vector3(position.x, position.y, position.z);
   }
+  public get groundNormal(): THREE.Vector3 | null {
+    let best: THREE.Vector3 | null = null;
+    let bestUpDot = -1;
+    const count = this.controller.numComputedCollisions();
+    for (let i = 0; i < count; i++) {
+      const collision = this.controller.computedCollision(i);
+      const n = collision?.normal1;
+      if (!n || n.y <= bestUpDot) continue;
+      bestUpDot = n.y;
+      best = new THREE.Vector3(n.x, n.y, n.z);
+    }
+
+    return best;
+  }
+  public get wallNormal(): THREE.Vector3 | null {
+    const count = this.controller.numComputedCollisions();
+    for (let i = 0; i < count; i++) {
+      const n = this.controller.computedCollision(i)?.normal1;
+      if (n && Math.abs(n.y) < 0.3) return new THREE.Vector3(n.x, n.y, n.z);
+    }
+    return null;
+  }
+  public get ceilingBump(): boolean {
+    const count = this.controller.numComputedCollisions();
+    for (let i = 0; i < count; i++) {
+      const n = this.controller.computedCollision(i)?.normal1;
+      if (n && n.y < -0.5) return true;
+    }
+
+    return false;
+  }
 }

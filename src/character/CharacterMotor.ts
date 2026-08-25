@@ -5,15 +5,23 @@ import CharacterConfig from "./CharacterConfig";
 import type CharacterInput from "./CharacterInput";
 
 export default class CharacterMotor {
+  private jumped = false;
   private grounded = false;
+  private ceilingBump = false;
   private verticalVelocity = 0;
   private horizontalVelocity = new THREE.Vector3();
   private tryJump(input: CharacterInput): void {
+    this.jumped = false;
     if (!input.jumping || !this.grounded) return;
+
     this.verticalVelocity = CharacterConfig.jump.force;
+    this.jumped = true;
   }
   private updateGravity(delta: number): void {
     if (this.grounded && this.verticalVelocity < 0) this.verticalVelocity = 0;
+    if (this.ceilingBump && this.verticalVelocity > 0)
+      this.verticalVelocity = 0;
+
     this.verticalVelocity += GameConfig.physics.gravity.y * delta;
   }
   private updateHorizontalVelocity(input: CharacterInput, delta: number): void {
@@ -25,8 +33,11 @@ export default class CharacterMotor {
     const acceleration = CharacterConfig.movement.acceleration;
     const deceleration = CharacterConfig.movement.deceleration;
     const rate = input.direction.lengthSq() > 0 ? acceleration : deceleration;
-
     this.horizontalVelocity.lerp(targetVelocity, 1 - Math.exp(-rate * delta));
+
+    const threshold = CharacterConfig.movement.restVelocityThreshold;
+    if (this.horizontalVelocity.lengthSq() < threshold * threshold)
+      this.horizontalVelocity.set(0, 0, 0);
   }
   private getMovement(delta: number): THREE.Vector3 {
     return new THREE.Vector3(
@@ -44,5 +55,19 @@ export default class CharacterMotor {
   }
   public setGrounded(value: boolean): void {
     this.grounded = value;
+  }
+  public setCeilingBump(value: boolean): void {
+    this.ceilingBump = value;
+  }
+  public get velocity(): THREE.Vector3 {
+    const reportedVertical = this.grounded ? 0 : this.verticalVelocity;
+    return new THREE.Vector3(
+      this.horizontalVelocity.x,
+      reportedVertical,
+      this.horizontalVelocity.z,
+    );
+  }
+  public get justJumped(): boolean {
+    return this.jumped;
   }
 }
