@@ -10,8 +10,7 @@ export default class CharacterMotor {
   private horizontalVelocity = new THREE.Vector3();
   private tryJump(input: CharacterInput): void {
     if (!input.jumping || !this.grounded) return;
-
-    this.verticalVelocity = CharacterConfig.force.jump;
+    this.verticalVelocity = CharacterConfig.jump.force;
   }
   private updateGravity(delta: number): void {
     if (this.grounded && this.verticalVelocity < 0) this.verticalVelocity = 0;
