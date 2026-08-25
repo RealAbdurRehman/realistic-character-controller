@@ -21,9 +21,7 @@ export default interface CharacterState {
   isFalling: boolean;
   isRising: boolean;
   fallHeight: number; // Valid to read on justLanded
-
   justJumped: boolean;
-  jumpCount: number; // In future for maybe having double jump
 
   groundNormal: THREE.Vector3 | null;
   slopeAngle: number;
