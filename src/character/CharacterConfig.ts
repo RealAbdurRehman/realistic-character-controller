@@ -1,6 +1,6 @@
 const CharacterConfig = {
   movement: { speed: 5, sprintSpeed: 8, acceleration: 8, deceleration: 10 },
-  force: { jump: 6 },
+  force: { jump: 8 },
   slope: {
     maxClimbAngle: 45,
     minSlideAngle: 30,
@@ -11,7 +11,7 @@ const CharacterConfig = {
       maxHeight: 0.5,
       minWidth: 0.2,
     },
-    snapToGround: 0.5,
+    snapToGround: 0.1,
   },
 } as const;
 
