@@ -7,7 +7,7 @@ const CharacterConfig = {
     restVelocityThreshold: 0.05,
     crouchMultiplier: 0.5,
   },
-  crouch: { halfHeight: 0.5, standPadding: 0.1 },
+  crouch: { halfHeight: 0.5 },
   jump: { force: 8 },
   slope: {
     maxClimbAngle: 45,

@@ -122,7 +122,7 @@ export default class CharacterPhysics {
     const heightDifference = standingHalfHeight - crouchingHalfHeight;
     const standingPosition = {
       x: position.x,
-      y: position.y + heightDifference + CharacterConfig.crouch.standPadding,
+      y: position.y + heightDifference,
       z: position.z,
     };
     const standingShape = new RAPIER.Capsule(
