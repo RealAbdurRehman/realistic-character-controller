@@ -10,7 +10,12 @@ A physics based character controller built with Three.js and Rapier, focused on 
 
 ## Goals
 
-- [ ] Basic Movement
+- [x] Basic Movement
+- [x] Basic Camera
+- [ ] Animations
+- [ ] Polished Movement
+- [ ] Polished Camera
+- [ ] Physics based animations
 
 ## Status
 
