@@ -67,7 +67,7 @@ export default class Game {
     const forward = this.cameraController.getForwardDirection();
 
     this.cameraController.update(position);
-    this.character.update(this.time.alpha, forward);
+    this.character.update(this.time.alpha, forward, this.time.delta);
 
     this.physicsDebug.update();
     this.input.update();
@@ -84,6 +84,7 @@ export default class Game {
       facing: forward,
       sprinting: input.sprinting,
       jumping: input.jumping,
+      crouching: input.crouching,
     };
     this.character.fixedUpdate(characterInput, this.time.fixedDelta);
 

@@ -5,4 +5,5 @@ export default interface CharacterInput {
   facing: THREE.Vector3;
   sprinting: boolean;
   jumping: boolean;
+  crouching: boolean;
 }

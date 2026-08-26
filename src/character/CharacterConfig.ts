@@ -5,18 +5,18 @@ const CharacterConfig = {
     acceleration: 8,
     deceleration: 10,
     restVelocityThreshold: 0.05,
+    crouchMultiplier: 0.5,
   },
+  crouch: { halfHeight: 0.5, standPadding: 0.1 },
   jump: { force: 8 },
   slope: {
     maxClimbAngle: 45,
     minSlideAngle: 30,
   },
+  collider: { radius: 0.5, standingHalfHeight: 1 },
   controller: {
     offset: 0.01,
-    autostep: {
-      maxHeight: 0.5,
-      minWidth: 0.2,
-    },
+    autostep: { maxHeight: 0.5, minWidth: 0.2 },
     snapToGround: 0.1,
   },
 } as const;

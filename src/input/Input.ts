@@ -40,6 +40,7 @@ export default class Input {
       direction,
       sprinting: this.keys.has(InputConfig.sprint),
       jumping: this.isJustPressed(InputConfig.jump),
+      crouching: this.keys.has(InputConfig.crouch),
     };
   }
   public update(): void {

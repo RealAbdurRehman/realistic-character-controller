@@ -17,6 +17,7 @@ export default interface CharacterState {
   localMovementDirection: THREE.Vector3;
   isMoving: boolean;
   isSprinting: boolean;
+  isCrouched: boolean;
 
   isFalling: boolean;
   isRising: boolean;

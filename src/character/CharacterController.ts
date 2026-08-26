@@ -13,12 +13,15 @@ export default class CharacterController {
   private readonly motor: CharacterMotor;
   private readonly physics: CharacterPhysics;
   private readonly stateTracker: CharacterStateTracker;
-  private previousPosition = new THREE.Vector3();
+  private currentPosition: THREE.Vector3;
+  private previousPosition: THREE.Vector3;
   constructor(world: RAPIER.World, position: THREE.Vector3) {
     this.motor = new CharacterMotor();
     this.physics = new CharacterPhysics(world, position);
     this.stateTracker = new CharacterStateTracker();
-    this.previousPosition.copy(this.physics.position);
+
+    this.currentPosition = position.clone();
+    this.previousPosition = position.clone();
   }
   private updateState(input: CharacterInput, delta: number): void {
     const groundNormal = this.physics.groundNormal;
@@ -39,6 +42,7 @@ export default class CharacterController {
         ? CharacterConfig.movement.sprintSpeed
         : CharacterConfig.movement.speed,
       sprinting: input.sprinting,
+      crouched: this.physics.isCrouched,
       jumped: this.motor.justJumped,
       groundNormal,
       sliding: this.physics.grounded && slopeAngleRad > maxClimbRad,
@@ -48,9 +52,22 @@ export default class CharacterController {
   }
   public fixedUpdate(input: CharacterInput, delta: number): void {
     this.previousPosition.copy(this.physics.position);
-    this.physics.move(this.motor.fixedUpdate(input, delta));
+
+    const grounded = this.physics.grounded;
+
+    if (input.crouching && this.physics.grounded)
+      this.physics.setCrouching(true);
+    else if (!input.crouching) this.physics.setCrouching(false);
+    if (!grounded && this.physics.isCrouched) this.physics.setCrouching(false);
+
+    this.motor.setCrouched(this.physics.isCrouched);
     this.motor.setGrounded(this.physics.grounded);
     this.motor.setCeilingBump(this.physics.ceilingBump);
+
+    const movement = this.motor.fixedUpdate(input, delta);
+    this.physics.move(movement);
+    this.currentPosition.copy(this.physics.position);
+
     this.updateState(input, delta);
   }
   public getState(): Readonly<CharacterState> {

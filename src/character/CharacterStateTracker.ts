@@ -13,6 +13,7 @@ interface StateUpdateParams {
   facing: THREE.Vector3;
   maxSpeed: number;
   sprinting: boolean;
+  crouched: boolean;
   jumped: boolean;
   groundNormal: THREE.Vector3 | null;
   sliding: boolean;
@@ -43,6 +44,7 @@ export default class CharacterStateTracker {
       localMovementDirection: new THREE.Vector3(),
       isMoving: false,
       isSprinting: false,
+      isCrouched: false,
       isFalling: false,
       isRising: false,
       fallHeight: 0,
@@ -64,6 +66,7 @@ export default class CharacterStateTracker {
       facing,
       maxSpeed,
       sprinting,
+      crouched,
       jumped,
       groundNormal,
       sliding,
@@ -120,6 +123,7 @@ export default class CharacterStateTracker {
       localMovementDirection,
       isMoving: horizontalSpeed > restThreshold,
       isSprinting: sprinting && horizontalSpeed > restThreshold,
+      isCrouched: crouched,
       isFalling: !grounded && velocity.y < -restThreshold,
       isRising: !grounded && velocity.y > restThreshold,
       fallHeight: this.currentFallHeight,

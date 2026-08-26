@@ -7,6 +7,7 @@ const InputConfig = {
   },
   sprint: "ShiftLeft",
   jump: "Space",
+  crouch: "ControlLeft",
 } as const;
 
 export default InputConfig;

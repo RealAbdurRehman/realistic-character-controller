@@ -8,6 +8,7 @@ export default class TestEnvironment {
     this.createStep(scene, world);
     this.createWall(scene, world);
     this.createCeilingArea(scene, world);
+    this.createCrouchingArea(scene, world);
   }
   private createBox(
     scene: THREE.Scene,
@@ -59,7 +60,7 @@ export default class TestEnvironment {
       scene,
       world,
       new THREE.Vector3(6, 1, 0),
-      new THREE.Vector3(4, 1, 8),
+      new THREE.Vector3(4, 1, 14),
       new THREE.Euler(Math.PI * 0.15, 0, 0),
     );
   }
@@ -101,6 +102,15 @@ export default class TestEnvironment {
       scene,
       world,
       new THREE.Vector3(0, ceilingHeight, -15),
+      new THREE.Vector3(6, 0.5, 6),
+    );
+  }
+  private createCrouchingArea(scene: THREE.Scene, world: RAPIER.World): void {
+    const ceilingHeight = 2.6;
+    this.createBox(
+      scene,
+      world,
+      new THREE.Vector3(8, ceilingHeight, -15),
       new THREE.Vector3(6, 0.5, 6),
     );
   }
