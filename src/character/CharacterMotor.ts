@@ -9,6 +9,7 @@ export default class CharacterMotor {
   private grounded = false;
   private crouched = false;
   private ceilingBump = false;
+  private effectiveSprinting = false;
 
   private turnSpeed = 0;
   private verticalVelocity = 0;
@@ -38,6 +39,7 @@ export default class CharacterMotor {
   }
   private updateHorizontalVelocity(input: CharacterInput, delta: number): void {
     const sprinting = input.sprinting && this.capabilities.canSprint;
+    this.effectiveSprinting = sprinting;
 
     let speed = sprinting
       ? CharacterConfig.movement.sprintSpeed
@@ -63,6 +65,7 @@ export default class CharacterMotor {
   private updateFacingDirection(input: CharacterInput, delta: number): void {
     if (input.direction.lengthSq() <= 0.0001) {
       this.turnSpeed = 0;
+      this.desiredFacingDirection.copy(this.facingDirection);
       return;
     }
 
@@ -120,11 +123,16 @@ export default class CharacterMotor {
     );
   }
   public get turnDirection(): -1 | 0 | 1 {
+    if (this.turnSpeed <= 0) return 0;
+
     const angle = this.turnAngle;
     const threshold = THREE.MathUtils.degToRad(1);
     if (Math.abs(angle) < threshold) return 0;
 
     return angle > 0 ? 1 : -1;
+  }
+  public get isSprinting(): boolean {
+    return this.effectiveSprinting;
   }
   public get justJumped(): boolean {
     return this.jumped;

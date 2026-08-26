@@ -28,7 +28,7 @@ export default interface CharacterState {
 
   isFalling: boolean;
   isRising: boolean;
-  fallHeight: number; // Valid to read on justLanded
+  fallHeight: number;
   justJumped: boolean;
 
   groundNormal: THREE.Vector3 | null;

@@ -42,10 +42,10 @@ export default class CharacterController {
       turnAngle: this.motor.turnAngle,
       turnDirection: this.motor.turnDirection,
       turnSpeed: this.motor.currentTurnSpeed,
-      maxSpeed: input.sprinting
+      maxSpeed: this.motor.isSprinting
         ? CharacterConfig.movement.sprintSpeed
         : CharacterConfig.movement.speed,
-      sprinting: input.sprinting,
+      sprinting: this.motor.isSprinting,
       crouched: this.physics.isCrouched,
       jumped: this.motor.justJumped,
       groundNormal,
