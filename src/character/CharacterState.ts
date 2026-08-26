@@ -13,6 +13,13 @@ export default interface CharacterState {
   verticalVelocity: number;
   speedRatio: number;
 
+  turnAngle: number;
+  turnDirection: -1 | 0 | 1;
+  turnSpeed: number;
+  isTurning: boolean;
+
+  facing: THREE.Vector3;
+  desiredFacing: THREE.Vector3;
   movementDirection: THREE.Vector3;
   localMovementDirection: THREE.Vector3;
   isMoving: boolean;

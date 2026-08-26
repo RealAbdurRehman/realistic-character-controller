@@ -10,8 +10,11 @@ export default class CharacterMotor {
   private crouched = false;
   private ceilingBump = false;
 
+  private turnSpeed = 0;
   private verticalVelocity = 0;
   private horizontalVelocity = new THREE.Vector3();
+  private facingDirection = new THREE.Vector3(0, 0, -1);
+  private desiredFacingDirection = new THREE.Vector3(0, 0, -1);
   private capabilities = { canJump: true, canSprint: false };
   private resolveCapabilities(): void {
     this.capabilities = {
@@ -52,6 +55,31 @@ export default class CharacterMotor {
     if (this.horizontalVelocity.lengthSq() < threshold * threshold)
       this.horizontalVelocity.set(0, 0, 0);
   }
+  private getSignedAngle(from: THREE.Vector3, to: THREE.Vector3): number {
+    const cross = new THREE.Vector3().crossVectors(from, to);
+    const dot = THREE.MathUtils.clamp(from.dot(to), -1, 1);
+    return Math.atan2(cross.y, dot);
+  }
+  private updateFacingDirection(input: CharacterInput, delta: number): void {
+    if (input.direction.lengthSq() <= 0.0001) {
+      this.turnSpeed = 0;
+      return;
+    }
+
+    this.desiredFacingDirection.copy(input.direction).setY(0).normalize();
+    const angle = this.getSignedAngle(
+      this.facingDirection,
+      this.desiredFacingDirection,
+    );
+
+    const maxTurnSpeed = CharacterConfig.movement.rotationSpeed;
+    const maxTurnAngle = maxTurnSpeed * delta;
+    const turnAngle = THREE.MathUtils.clamp(angle, -maxTurnAngle, maxTurnAngle);
+
+    this.facingDirection.applyAxisAngle(new THREE.Vector3(0, 1, 0), turnAngle);
+    this.facingDirection.normalize();
+    this.turnSpeed = Math.abs(turnAngle) / delta;
+  }
   private getMovement(delta: number): THREE.Vector3 {
     return new THREE.Vector3(
       this.horizontalVelocity.x * delta,
@@ -64,6 +92,7 @@ export default class CharacterMotor {
     this.tryJump(input);
     this.updateGravity(delta);
     this.updateHorizontalVelocity(input, delta);
+    this.updateFacingDirection(input, delta);
 
     return this.getMovement(delta);
   }
@@ -84,7 +113,29 @@ export default class CharacterMotor {
       this.horizontalVelocity.z,
     );
   }
+  public get turnAngle(): number {
+    return this.getSignedAngle(
+      this.facingDirection,
+      this.desiredFacingDirection,
+    );
+  }
+  public get turnDirection(): -1 | 0 | 1 {
+    const angle = this.turnAngle;
+    const threshold = THREE.MathUtils.degToRad(1);
+    if (Math.abs(angle) < threshold) return 0;
+
+    return angle > 0 ? 1 : -1;
+  }
   public get justJumped(): boolean {
     return this.jumped;
+  }
+  public get facing(): THREE.Vector3 {
+    return this.facingDirection;
+  }
+  public get desiredFacing(): THREE.Vector3 {
+    return this.desiredFacingDirection;
+  }
+  public get currentTurnSpeed(): number {
+    return this.turnSpeed;
   }
 }

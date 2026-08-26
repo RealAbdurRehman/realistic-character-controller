@@ -37,7 +37,11 @@ export default class CharacterController {
       grounded: this.physics.grounded,
       position: this.physics.position,
       velocity: this.motor.velocity,
-      facing: input.facing,
+      facing: this.motor.facing,
+      desiredFacing: this.motor.desiredFacing,
+      turnAngle: this.motor.turnAngle,
+      turnDirection: this.motor.turnDirection,
+      turnSpeed: this.motor.currentTurnSpeed,
       maxSpeed: input.sprinting
         ? CharacterConfig.movement.sprintSpeed
         : CharacterConfig.movement.speed,

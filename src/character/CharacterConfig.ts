@@ -2,6 +2,7 @@ const CharacterConfig = {
   movement: {
     speed: 5,
     sprintSpeed: 8,
+    rotationSpeed: 5,
     acceleration: 8,
     deceleration: 10,
     restVelocityThreshold: 0.05,

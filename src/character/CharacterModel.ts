@@ -9,13 +9,13 @@ export default class CharacterModel {
     scene.add(this.instance);
   }
   private createInstance(): THREE.Mesh {
-    const geometry = new THREE.CapsuleGeometry(0.5, 2, 40, 40);
+    const geometry = new THREE.CapsuleGeometry(0.5, 2);
     const material = new THREE.MeshStandardMaterial();
     return new THREE.Mesh(geometry, material);
   }
   public update(
     position: THREE.Vector3,
-    forward: THREE.Vector3,
+    facing: THREE.Vector3,
     crouched: boolean,
     delta: number,
   ): void {
@@ -30,6 +30,6 @@ export default class CharacterModel {
     this.instance.scale.y = heightScale;
 
     this.instance.position.copy(position);
-    this.instance.rotation.y = Math.atan2(forward.x, forward.z);
+    this.instance.rotation.y = Math.atan2(facing.x, facing.z);
   }
 }

@@ -11,6 +11,10 @@ interface StateUpdateParams {
   position: THREE.Vector3;
   velocity: THREE.Vector3;
   facing: THREE.Vector3;
+  desiredFacing: THREE.Vector3;
+  turnAngle: number;
+  turnDirection: -1 | 0 | 1;
+  turnSpeed: number;
   maxSpeed: number;
   sprinting: boolean;
   crouched: boolean;
@@ -40,6 +44,12 @@ export default class CharacterStateTracker {
       horizontalSpeed: 0,
       verticalVelocity: 0,
       speedRatio: 0,
+      turnAngle: 0,
+      turnDirection: 0,
+      turnSpeed: 0,
+      isTurning: false,
+      facing: new THREE.Vector3(0, 0, -1),
+      desiredFacing: new THREE.Vector3(0, 0, -1),
       movementDirection: new THREE.Vector3(),
       localMovementDirection: new THREE.Vector3(),
       isMoving: false,
@@ -64,6 +74,10 @@ export default class CharacterStateTracker {
       position,
       velocity,
       facing,
+      desiredFacing,
+      turnAngle,
+      turnDirection,
+      turnSpeed,
       maxSpeed,
       sprinting,
       crouched,
@@ -102,6 +116,9 @@ export default class CharacterStateTracker {
       localMovementDirection = new THREE.Vector3(strafe, 0, fwd).normalize();
     }
 
+    const isTurning =
+      Math.abs(turnAngle) > THREE.MathUtils.degToRad(2) && turnSpeed > 0;
+
     this.state = {
       grounded,
       justLanded: grounded && !this.wasGrounded,
@@ -116,6 +133,12 @@ export default class CharacterStateTracker {
         maxSpeed > 0
           ? THREE.MathUtils.clamp(horizontalSpeed / maxSpeed, 0, 1)
           : 0,
+      turnAngle,
+      turnDirection,
+      turnSpeed,
+      isTurning,
+      facing: facing.clone(),
+      desiredFacing: desiredFacing.clone(),
       movementDirection:
         horizontalSpeed > restThreshold
           ? horizontalVelocity.clone().normalize()

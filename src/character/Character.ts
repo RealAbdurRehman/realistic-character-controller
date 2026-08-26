@@ -19,10 +19,10 @@ export default class Character {
   public fixedUpdate(input: CharacterInput, delta: number): void {
     this.controller.fixedUpdate(input, delta);
   }
-  public update(alpha: number, forward: THREE.Vector3, delta: number): void {
+  public update(alpha: number, delta: number): void {
     const state = this.controller.getState();
     const position = this.controller.getInterpolatedPosition(alpha);
-    this.model.update(position, forward, state.isCrouched, delta);
+    this.model.update(position, state.facing, state.isCrouched, delta);
   }
   public getInterpolatedPosition(alpha: number): THREE.Vector3 {
     return this.controller.getInterpolatedPosition(alpha);

@@ -64,24 +64,21 @@ export default class Game {
   }
   private update(): void {
     const position = this.character.getInterpolatedPosition(this.time.alpha);
-    const forward = this.cameraController.getForwardDirection();
 
     this.cameraController.update(position);
-    this.character.update(this.time.alpha, forward, this.time.delta);
+    this.character.update(this.time.alpha, this.time.delta);
 
     this.physicsDebug.update();
     this.input.update();
   }
   private fixedUpdate(): void {
     const input = this.input.getInput();
-    const forward = this.cameraController.getForwardDirection();
     const movement = this.cameraController.getMovementDirection(
       input.direction,
     );
 
     const characterInput: CharacterInput = {
       direction: movement,
-      facing: forward,
       sprinting: input.sprinting,
       jumping: input.jumping,
       crouching: input.crouching,
