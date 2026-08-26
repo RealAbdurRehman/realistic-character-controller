@@ -23,7 +23,7 @@ export default class CharacterController {
     this.currentPosition = position.clone();
     this.previousPosition = position.clone();
   }
-  private updateState(input: CharacterInput, delta: number): void {
+  private updateState(delta: number): void {
     const groundNormal = this.physics.groundNormal;
     const slopeAngleRad = groundNormal
       ? groundNormal.angleTo(new THREE.Vector3(0, 1, 0))
@@ -72,7 +72,7 @@ export default class CharacterController {
     this.physics.move(movement);
     this.currentPosition.copy(this.physics.position);
 
-    this.updateState(input, delta);
+    this.updateState(delta);
   }
   public getState(): Readonly<CharacterState> {
     return this.stateTracker.getState();
