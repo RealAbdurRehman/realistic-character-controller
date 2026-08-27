@@ -20,6 +20,9 @@ export default function enableLightShadow({
 
   light.shadow.camera.near = 0.1;
   light.shadow.camera.far = far;
+
+  light.shadow.bias = -0.00005;
+  light.shadow.normalBias = 0.03;
   light.shadow.mapSize.set(mapSize.width, mapSize.height);
 
   light.shadow.camera.top = d;
