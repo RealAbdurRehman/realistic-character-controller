@@ -15,6 +15,7 @@ export default function enableModelShadow({
     if (child instanceof THREE.Mesh) {
       child.castShadow = shouldCast;
       child.receiveShadow = shouldReceive;
+      child.frustumCulled = false;
     }
   });
 }
