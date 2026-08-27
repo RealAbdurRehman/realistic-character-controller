@@ -13,6 +13,8 @@ export default class Renderer {
   }
   private init(): void {
     this.instance.outputColorSpace = THREE.SRGBColorSpace;
+    this.instance.shadowMap.enabled = true;
+    this.instance.shadowMap.type = THREE.PCFShadowMap;
     this.instance.setSize(window.innerWidth, window.innerHeight);
     this.instance.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 

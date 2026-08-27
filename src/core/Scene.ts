@@ -1,5 +1,7 @@
 import * as THREE from "three";
 
+import enableLightShadow from "../utils/enableLightShadow";
+
 export default class Scene {
   public readonly instance: THREE.Scene;
   constructor() {
@@ -15,5 +17,7 @@ export default class Scene {
     const keyLight = new THREE.DirectionalLight(0xffffff, 1.3);
     keyLight.position.set(4, 6, 5);
     this.instance.add(keyLight);
+
+    enableLightShadow({ light: keyLight });
   }
 }

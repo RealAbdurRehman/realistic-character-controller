@@ -1,6 +1,8 @@
 import * as THREE from "three";
 import RAPIER from "@dimforge/rapier3d-compat";
 
+import enableObjectShadow from "../utils/enableObjectShadow";
+
 export default class Ground {
   constructor(scene: THREE.Scene, world: RAPIER.World) {
     this.createMesh(scene);
@@ -9,7 +11,9 @@ export default class Ground {
   private createMesh(scene: THREE.Scene): void {
     const geometry = new THREE.BoxGeometry(40, 0.5, 40);
     const material = new THREE.MeshStandardMaterial({ color: 0x7c9818 });
+
     const mesh = new THREE.Mesh(geometry, material);
+    enableObjectShadow({ object: mesh });
 
     scene.add(mesh);
   }

@@ -1,6 +1,8 @@
 import * as THREE from "three";
 import RAPIER from "@dimforge/rapier3d-compat";
 
+import enableObjectShadow from "../utils/enableObjectShadow";
+
 export default class TestEnvironment {
   constructor(scene: THREE.Scene, world: RAPIER.World) {
     this.createSlope(scene, world);
@@ -19,7 +21,9 @@ export default class TestEnvironment {
   ): void {
     const geometry = new THREE.BoxGeometry(size.x, size.y, size.z);
     const material = new THREE.MeshStandardMaterial();
+
     const mesh = new THREE.Mesh(geometry, material);
+    enableObjectShadow({ object: mesh });
 
     mesh.position.copy(position);
     if (rotation) mesh.rotation.copy(rotation);

@@ -1,5 +1,7 @@
 import * as THREE from "three";
 
+import enableObjectShadow from "../utils/enableObjectShadow";
+
 export default class CharacterModel {
   private crouchAmount = 0;
   private readonly crouchSpeed = 12;
@@ -11,7 +13,11 @@ export default class CharacterModel {
   private createInstance(): THREE.Mesh {
     const geometry = new THREE.CapsuleGeometry(0.5, 2);
     const material = new THREE.MeshStandardMaterial();
-    return new THREE.Mesh(geometry, material);
+
+    const mesh = new THREE.Mesh(geometry, material);
+    enableObjectShadow({ object: mesh });
+
+    return mesh;
   }
   public update(
     position: THREE.Vector3,
