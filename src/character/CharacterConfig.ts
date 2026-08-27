@@ -2,7 +2,7 @@ const CharacterConfig = {
   movement: {
     speed: 5,
     sprintSpeed: 8,
-    rotationSpeed: 5,
+    rotationSpeed: 6,
     acceleration: 8,
     deceleration: 10,
     restVelocityThreshold: 0.05,
@@ -19,6 +19,9 @@ const CharacterConfig = {
     offset: 0.01,
     autostep: { maxHeight: 0.5, minWidth: 0.2 },
     snapToGround: 0.1,
+  },
+  model: {
+    scale: 1.68,
   },
 } as const;
 

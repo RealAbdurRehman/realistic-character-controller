@@ -16,26 +16,31 @@ import type CharacterInput from "../character/CharacterInput";
 
 import GameConfig from "../config/GameConfig";
 
+import AssetLoader from "../loaders/AssetLoader";
+import LoadingScreen from "../ui/LoadingScreen";
+
 export default class Game {
+  private readonly loadingScreen: LoadingScreen;
+
   private readonly scene: Scene;
   private readonly camera: Camera;
-  private readonly cameraController: CameraController;
   private readonly renderer: Renderer;
+  private readonly cameraController: CameraController;
 
   private readonly time: Time;
   private readonly physics: PhysicsWorld;
   private readonly physicsDebug: PhysicsDebug;
 
-  private readonly ground: Ground;
-  private readonly testEnvironment: TestEnvironment;
-
   private readonly input: Input;
-  private readonly character: Character;
+
+  private character!: Character;
   constructor() {
+    this.loadingScreen = new LoadingScreen();
+
     this.scene = new Scene();
     this.camera = new Camera();
-    this.cameraController = new CameraController(this.camera);
     this.renderer = new Renderer();
+    this.cameraController = new CameraController(this.camera);
 
     this.time = new Time();
     this.physics = new PhysicsWorld();
@@ -44,20 +49,31 @@ export default class Game {
       this.physics.instance,
     );
 
-    this.ground = new Ground(this.scene.instance, this.physics.instance);
-    this.testEnvironment = new TestEnvironment(
-      this.scene.instance,
-      this.physics.instance,
+    this.input = new Input();
+
+    new Ground(this.scene.instance, this.physics.instance);
+    new TestEnvironment(this.scene.instance, this.physics.instance);
+
+    this.addEventListeners();
+  }
+  public async init(): Promise<void> {
+    const loader = new AssetLoader(
+      (progress) => this.loadingScreen.update(progress),
+      () => this.loadingScreen.hide(),
     );
 
-    this.input = new Input();
+    const characterGltf = await loader.loadGLTF(
+      GameConfig.assets.models.player,
+    );
+
     this.character = new Character(
       this.scene.instance,
       this.physics.instance,
-      GameConfig.spawn.player,
+      GameConfig.spawn.player.clone(),
+      characterGltf.scene,
     );
 
-    this.addEventListeners();
+    requestAnimationFrame(this.animate);
   }
   private render(): void {
     this.renderer.render(this.scene.instance, this.camera.instance);
@@ -105,10 +121,5 @@ export default class Game {
     document.body.addEventListener("click", () =>
       document.body.requestPointerLock(),
     );
-  }
-  public init(): void {
-    console.log(this.ground);
-    console.log(this.testEnvironment);
-    requestAnimationFrame(this.animate);
   }
 }

@@ -69,6 +69,8 @@ export default class CharacterMotor {
   private getSignedAngle(from: THREE.Vector3, to: THREE.Vector3): number {
     _cross.crossVectors(from, to);
     const dot = THREE.MathUtils.clamp(from.dot(to), -1, 1);
+    if (dot < -0.9999) return Math.PI;
+
     return Math.atan2(_cross.y, dot);
   }
   private updateFacingDirection(input: CharacterInput, delta: number): void {
@@ -84,12 +86,11 @@ export default class CharacterMotor {
       this.desiredFacingDirection,
     );
 
-    const maxTurnSpeed = CharacterConfig.movement.rotationSpeed;
-    const maxTurnAngle = maxTurnSpeed * delta;
-    const turnAngle = THREE.MathUtils.clamp(angle, -maxTurnAngle, maxTurnAngle);
-
+    const rate = CharacterConfig.movement.rotationSpeed;
+    const turnAngle = angle * (1 - Math.exp(-rate * delta));
     this.facingDirection.applyAxisAngle(WORLD_UP, turnAngle);
     this.facingDirection.normalize();
+
     this.turnSpeed = Math.abs(turnAngle) / delta;
   }
   private getMovement(delta: number): THREE.Vector3 {

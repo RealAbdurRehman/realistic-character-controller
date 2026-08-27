@@ -1,6 +1,11 @@
 import * as THREE from "three";
 
 const GameConfig = {
+  assets: {
+    models: {
+      player: "/models/player/player.glb",
+    },
+  },
   camera: {
     fov: 60,
     near: 0.1,

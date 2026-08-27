@@ -12,9 +12,10 @@ export default class Character {
     scene: THREE.Scene,
     world: RAPIER.World,
     position: THREE.Vector3,
+    modelGltfScene?: THREE.Group,
   ) {
     this.controller = new CharacterController(world, position);
-    this.model = new CharacterModel(scene);
+    this.model = new CharacterModel(scene, modelGltfScene);
   }
   public fixedUpdate(input: CharacterInput, delta: number): void {
     this.controller.fixedUpdate(input, delta);
@@ -22,7 +23,8 @@ export default class Character {
   public update(alpha: number, delta: number): void {
     const state = this.controller.getState();
     const position = this.controller.getInterpolatedPosition(alpha);
-    this.model.update(position, state.facing, state.isCrouched, delta);
+    const rotation = this.controller.getInterpolatedRotation(alpha);
+    this.model.update(position, rotation, state.isCrouched, delta);
   }
   public getInterpolatedPosition(alpha: number): THREE.Vector3 {
     return this.controller.getInterpolatedPosition(alpha);

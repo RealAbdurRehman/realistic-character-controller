@@ -6,7 +6,7 @@ async function main(): Promise<void> {
   await RAPIER.init();
 
   const game = new Game();
-  game.init();
+  await game.init();
 }
 
 main();

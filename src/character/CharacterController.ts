@@ -9,9 +9,15 @@ import CharacterConfig from "./CharacterConfig";
 import type CharacterState from "./CharacterState";
 import type CharacterInput from "./CharacterInput";
 
+const WORLD_UP = new THREE.Vector3(0, 1, 0);
+
 export default class CharacterController {
   private currentPosition: THREE.Vector3;
   private previousPosition: THREE.Vector3;
+
+  private previousQuaternion = new THREE.Quaternion();
+  private currentQuaternion = new THREE.Quaternion();
+  private readonly interpolatedQuaternion = new THREE.Quaternion();
 
   private readonly motor: CharacterMotor;
   private readonly physics: CharacterPhysics;
@@ -24,6 +30,12 @@ export default class CharacterController {
 
     this.currentPosition = position.clone();
     this.previousPosition = position.clone();
+
+    this.previousQuaternion.setFromAxisAngle(
+      WORLD_UP,
+      Math.atan2(this.motor.facing.x, this.motor.facing.z),
+    );
+    this.currentQuaternion.copy(this.previousQuaternion);
   }
   private updateState(delta: number): void {
     const groundNormal = this.physics.groundNormal;
@@ -58,6 +70,7 @@ export default class CharacterController {
   }
   public fixedUpdate(input: CharacterInput, delta: number): void {
     this.previousPosition.copy(this.physics.position);
+    this.previousQuaternion.copy(this.currentQuaternion);
 
     const grounded = this.physics.grounded;
 
@@ -73,6 +86,10 @@ export default class CharacterController {
     const movement = this.motor.fixedUpdate(input, delta);
     this.physics.move(movement);
     this.currentPosition.copy(this.physics.position);
+    this.currentQuaternion.setFromAxisAngle(
+      WORLD_UP,
+      Math.atan2(this.motor.facing.x, this.motor.facing.z),
+    );
 
     this.updateState(delta);
   }
@@ -83,5 +100,10 @@ export default class CharacterController {
     return this.interpolatedPosition
       .copy(this.previousPosition)
       .lerp(this.physics.position, alpha);
+  }
+  public getInterpolatedRotation(alpha: number): THREE.Quaternion {
+    return this.interpolatedQuaternion
+      .copy(this.previousQuaternion)
+      .slerp(this.currentQuaternion, alpha);
   }
 }
