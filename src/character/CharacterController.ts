@@ -10,11 +10,13 @@ import type CharacterState from "./CharacterState";
 import type CharacterInput from "./CharacterInput";
 
 export default class CharacterController {
+  private currentPosition: THREE.Vector3;
+  private previousPosition: THREE.Vector3;
+
   private readonly motor: CharacterMotor;
   private readonly physics: CharacterPhysics;
   private readonly stateTracker: CharacterStateTracker;
-  private currentPosition: THREE.Vector3;
-  private previousPosition: THREE.Vector3;
+  private readonly interpolatedPosition = new THREE.Vector3();
   constructor(world: RAPIER.World, position: THREE.Vector3) {
     this.motor = new CharacterMotor();
     this.physics = new CharacterPhysics(world, position);
@@ -78,6 +80,8 @@ export default class CharacterController {
     return this.stateTracker.getState();
   }
   public getInterpolatedPosition(alpha: number): THREE.Vector3 {
-    return this.previousPosition.clone().lerp(this.physics.position, alpha);
+    return this.interpolatedPosition
+      .copy(this.previousPosition)
+      .lerp(this.physics.position, alpha);
   }
 }

@@ -6,13 +6,26 @@ import CharacterConfig from "./CharacterConfig";
 export default class CharacterPhysics {
   private stuckFrames = 0;
   private crouched = false;
+
   private readonly world: RAPIER.World;
   private readonly collider: RAPIER.Collider;
   private readonly controller: RAPIER.KinematicCharacterController;
+  private standingShape: RAPIER.Capsule;
+
+  private readonly _position = new THREE.Vector3();
+  private readonly _wallNormal = new THREE.Vector3();
+  private readonly _groundNormal = new THREE.Vector3();
+
+  private readonly standingShapeQueryPos = { x: 0, y: 0, z: 0 };
+  private readonly standingShapeRotation = { x: 0, y: 0, z: 0, w: 1 };
   constructor(world: RAPIER.World, position: THREE.Vector3) {
     this.world = world;
     this.controller = this.createController(world);
     this.collider = this.createCollider(world);
+    this.standingShape = new RAPIER.Capsule(
+      CharacterConfig.collider.standingHalfHeight,
+      CharacterConfig.collider.radius,
+    );
 
     this.init(position);
   }
@@ -52,12 +65,12 @@ export default class CharacterPhysics {
     return world.createCollider(colliderDesc);
   }
   private applyMovement(): void {
-    const position = this.position;
+    const translation = this.collider.translation();
     const correctedMovement = this.controller.computedMovement();
     this.collider.setTranslation({
-      x: position.x + correctedMovement.x,
-      y: position.y + correctedMovement.y,
-      z: position.z + correctedMovement.z,
+      x: translation.x + correctedMovement.x,
+      y: translation.y + correctedMovement.y,
+      z: translation.z + correctedMovement.z,
     });
   }
   private tryUnstuck(): void {
@@ -77,21 +90,33 @@ export default class CharacterPhysics {
     this.stuckFrames++;
     if (this.stuckFrames < 3) return;
 
-    const avg = new THREE.Vector3();
+    let avgX = 0;
+    let avgY = 0;
+    let avgZ = 0;
+
     for (let i = 0; i < count; i++) {
       const n = this.controller.computedCollision(i)?.normal1;
-      if (n) avg.add(new THREE.Vector3(n.x, n.y, n.z));
+      if (n) {
+        avgX += n.x;
+        avgY += n.y;
+        avgZ += n.z;
+      }
     }
 
-    if (avg.lengthSq() === 0) return;
-    avg.normalize();
+    const lenSq = avgX * avgX + avgY * avgY + avgZ * avgZ;
+    if (lenSq === 0) return;
+
+    const invLen = 1 / Math.sqrt(lenSq);
+    avgX *= invLen;
+    avgY *= invLen;
+    avgZ *= invLen;
 
     const nudge = 0.05;
-    const p = this.position;
+    const translation = this.collider.translation();
     this.collider.setTranslation({
-      x: p.x + avg.x * nudge,
-      y: p.y + avg.y * nudge,
-      z: p.z + avg.z * nudge,
+      x: translation.x + avgX * nudge,
+      y: translation.y + avgY * nudge,
+      z: translation.z + avgZ * nudge,
     });
     this.stuckFrames = 0;
   }
@@ -101,39 +126,34 @@ export default class CharacterPhysics {
       : CharacterConfig.collider.standingHalfHeight;
 
     const halfHeightDelta = newHalfHeight - oldHalfHeight;
-    const position = this.position;
+    const translation = this.collider.translation();
 
     this.collider.setShape(
       new RAPIER.Capsule(newHalfHeight, CharacterConfig.collider.radius),
     );
 
     this.collider.setTranslation({
-      x: position.x,
-      y: position.y + halfHeightDelta,
-      z: position.z,
+      x: translation.x,
+      y: translation.y + halfHeightDelta,
+      z: translation.z,
     });
   }
   private canStand(): boolean {
     if (!this.crouched) return true;
 
-    const position = this.position;
+    const translation = this.collider.translation();
     const standingHalfHeight = CharacterConfig.collider.standingHalfHeight;
     const crouchingHalfHeight = CharacterConfig.crouch.halfHeight;
     const heightDifference = standingHalfHeight - crouchingHalfHeight;
-    const standingPosition = {
-      x: position.x,
-      y: position.y + heightDifference,
-      z: position.z,
-    };
-    const standingShape = new RAPIER.Capsule(
-      standingHalfHeight,
-      CharacterConfig.collider.radius,
-    );
+
+    this.standingShapeQueryPos.x = translation.x;
+    this.standingShapeQueryPos.y = translation.y + heightDifference;
+    this.standingShapeQueryPos.z = translation.z;
 
     const hit = this.world.intersectionWithShape(
-      standingPosition,
-      { x: 0, y: 0, z: 0, w: 1 },
-      standingShape,
+      this.standingShapeQueryPos,
+      this.standingShapeRotation,
+      this.standingShape,
       undefined,
       undefined,
       this.collider,
@@ -171,28 +191,36 @@ export default class CharacterPhysics {
     return this.controller.computedGrounded();
   }
   public get position(): THREE.Vector3 {
-    const position = this.collider.translation();
-    return new THREE.Vector3(position.x, position.y, position.z);
+    const translation = this.collider.translation();
+    return this._position.set(translation.x, translation.y, translation.z);
   }
   public get groundNormal(): THREE.Vector3 | null {
-    let best: THREE.Vector3 | null = null;
+    let found = false;
     let bestUpDot = -1;
+    let bestX = 0,
+      bestY = 0,
+      bestZ = 0;
+
     const count = this.controller.numComputedCollisions();
     for (let i = 0; i < count; i++) {
       const collision = this.controller.computedCollision(i);
       const n = collision?.normal1;
       if (!n || n.y <= bestUpDot) continue;
       bestUpDot = n.y;
-      best = new THREE.Vector3(n.x, n.y, n.z);
+      bestX = n.x;
+      bestY = n.y;
+      bestZ = n.z;
+      found = true;
     }
 
-    return best;
+    if (!found) return null;
+    return this._groundNormal.set(bestX, bestY, bestZ);
   }
   public get wallNormal(): THREE.Vector3 | null {
     const count = this.controller.numComputedCollisions();
     for (let i = 0; i < count; i++) {
       const n = this.controller.computedCollision(i)?.normal1;
-      if (n && Math.abs(n.y) < 0.3) return new THREE.Vector3(n.x, n.y, n.z);
+      if (n && Math.abs(n.y) < 0.3) return this._wallNormal.set(n.x, n.y, n.z);
     }
     return null;
   }

@@ -1,14 +1,16 @@
 import * as THREE from "three";
 
 import Camera from "./Camera";
-
 import GameConfig from "../config/GameConfig";
 
-export default class CameraController {
-  private readonly camera: Camera;
+const _forward = new THREE.Vector3();
+const _right = new THREE.Vector3();
+const _movementDir = new THREE.Vector3();
 
+export default class CameraController {
   private yaw = 0;
   private pitch = 0;
+  private readonly camera: Camera;
   constructor(camera: Camera) {
     this.camera = camera;
     this.addEventListeners();
@@ -44,15 +46,16 @@ export default class CameraController {
     this.follow(target);
   }
   public getForwardDirection(): THREE.Vector3 {
-    return new THREE.Vector3(-Math.sin(this.yaw), 0, -Math.cos(this.yaw));
+    return _forward.set(-Math.sin(this.yaw), 0, -Math.cos(this.yaw));
   }
   public getMovementDirection(input: THREE.Vector2): THREE.Vector3 {
-    const forward = this.getForwardDirection();
-    const right = new THREE.Vector3(Math.cos(this.yaw), 0, -Math.sin(this.yaw));
+    _forward.set(-Math.sin(this.yaw), 0, -Math.cos(this.yaw));
+    _right.set(Math.cos(this.yaw), 0, -Math.sin(this.yaw));
 
-    return new THREE.Vector3()
-      .addScaledVector(forward, input.y)
-      .addScaledVector(right, input.x)
+    return _movementDir
+      .set(0, 0, 0)
+      .addScaledVector(_forward, input.y)
+      .addScaledVector(_right, input.x)
       .normalize();
   }
 }

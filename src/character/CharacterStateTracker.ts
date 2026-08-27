@@ -4,6 +4,8 @@ import CharacterConfig from "./CharacterConfig";
 import type CharacterState from "./CharacterState";
 
 const WORLD_UP = new THREE.Vector3(0, 1, 0);
+const _tempHVel = new THREE.Vector3();
+const _tempRight = new THREE.Vector3();
 
 interface StateUpdateParams {
   delta: number;
@@ -31,7 +33,9 @@ export default class CharacterStateTracker {
   private sinceJump = Infinity;
   private peakHeight = 0;
   private currentFallHeight = 0;
-  private state: CharacterState = this.createDefaultState();
+  private readonly groundNormalVector = new THREE.Vector3();
+  private readonly wallNormalVector = new THREE.Vector3();
+  private readonly state: CharacterState = this.createDefaultState();
   private createDefaultState(): CharacterState {
     return {
       grounded: false,
@@ -89,15 +93,14 @@ export default class CharacterStateTracker {
     } = params;
 
     const restThreshold = CharacterConfig.movement.restVelocityThreshold;
-    const horizontalVelocity = new THREE.Vector3(velocity.x, 0, velocity.z);
-    const horizontalSpeed = horizontalVelocity.length();
+
+    _tempHVel.set(velocity.x, 0, velocity.z);
+    const horizontalSpeed = _tempHVel.length();
 
     this.airborneTime = grounded ? 0 : this.airborneTime + delta;
     this.sinceJump = jumped ? 0 : this.sinceJump + delta;
 
-    const slopeAngle = groundNormal
-      ? groundNormal.angleTo(new THREE.Vector3(0, 1, 0))
-      : 0;
+    const slopeAngle = groundNormal ? groundNormal.angleTo(WORLD_UP) : 0;
 
     if (!grounded) {
       this.peakHeight = this.wasGrounded
@@ -106,58 +109,66 @@ export default class CharacterStateTracker {
       this.currentFallHeight = Math.max(0, this.peakHeight - position.y);
     }
 
-    let localMovementDirection = new THREE.Vector3();
     if (horizontalSpeed > restThreshold) {
-      const right = new THREE.Vector3()
-        .crossVectors(facing, WORLD_UP)
-        .normalize();
-      const strafe = horizontalVelocity.dot(right);
-      const fwd = horizontalVelocity.dot(facing);
-      localMovementDirection = new THREE.Vector3(strafe, 0, fwd).normalize();
-    }
+      _tempRight.crossVectors(facing, WORLD_UP).normalize();
+      const strafe = _tempHVel.dot(_tempRight);
+      const fwd = _tempHVel.dot(facing);
+      this.state.localMovementDirection.set(strafe, 0, fwd).normalize();
+    } else this.state.localMovementDirection.set(0, 0, 0);
 
     const isTurning =
       Math.abs(turnAngle) > THREE.MathUtils.degToRad(2) && turnSpeed > 0;
+    const isMoving = horizontalSpeed > restThreshold;
 
-    this.state = {
-      grounded,
-      justLanded: grounded && !this.wasGrounded,
-      justLeftGround: !grounded && this.wasGrounded && !jumped,
-      timeSinceGrounded: this.airborneTime,
-      timeSinceJump: this.sinceJump,
-      velocity: velocity.clone(),
-      horizontalVelocity,
-      horizontalSpeed,
-      verticalVelocity: velocity.y,
-      speedRatio:
-        maxSpeed > 0
-          ? THREE.MathUtils.clamp(horizontalSpeed / maxSpeed, 0, 1)
-          : 0,
-      turnAngle,
-      turnDirection,
-      turnSpeed,
-      isTurning,
-      facing: facing.clone(),
-      desiredFacing: desiredFacing.clone(),
-      movementDirection:
-        horizontalSpeed > restThreshold
-          ? horizontalVelocity.clone().normalize()
-          : new THREE.Vector3(),
-      localMovementDirection,
-      isMoving: horizontalSpeed > restThreshold,
-      isSprinting: sprinting && horizontalSpeed > restThreshold,
-      isCrouched: crouched,
-      isFalling: !grounded && velocity.y < -restThreshold,
-      isRising: !grounded && velocity.y > restThreshold,
-      fallHeight: this.currentFallHeight,
-      justJumped: jumped,
-      groundNormal,
-      slopeAngle,
-      isSliding: sliding,
-      isCeilingBump: ceilingBump,
-      isWallCollision: wallNormal !== null,
-      wallNormal,
-    };
+    const s = this.state;
+    s.grounded = grounded;
+    s.justLanded = grounded && !this.wasGrounded;
+    s.justLeftGround = !grounded && this.wasGrounded && !jumped;
+    s.timeSinceGrounded = this.airborneTime;
+    s.timeSinceJump = this.sinceJump;
+
+    s.velocity.copy(velocity);
+    s.horizontalVelocity.copy(_tempHVel);
+    s.horizontalSpeed = horizontalSpeed;
+    s.verticalVelocity = velocity.y;
+    s.speedRatio =
+      maxSpeed > 0
+        ? THREE.MathUtils.clamp(horizontalSpeed / maxSpeed, 0, 1)
+        : 0;
+
+    s.turnAngle = turnAngle;
+    s.turnDirection = turnDirection;
+    s.turnSpeed = turnSpeed;
+    s.isTurning = isTurning;
+    s.facing.copy(facing);
+    s.desiredFacing.copy(desiredFacing);
+
+    if (isMoving) s.movementDirection.copy(_tempHVel).normalize();
+    else s.movementDirection.set(0, 0, 0);
+
+    s.isMoving = isMoving;
+    s.isSprinting = sprinting && isMoving;
+    s.isCrouched = crouched;
+    s.isFalling = !grounded && velocity.y < -restThreshold;
+    s.isRising = !grounded && velocity.y > restThreshold;
+
+    s.fallHeight = this.currentFallHeight;
+    s.justJumped = jumped;
+
+    if (groundNormal) {
+      this.groundNormalVector.copy(groundNormal);
+      s.groundNormal = this.groundNormalVector;
+    } else s.groundNormal = null;
+
+    s.slopeAngle = slopeAngle;
+    s.isSliding = sliding;
+    s.isCeilingBump = ceilingBump;
+    s.isWallCollision = wallNormal !== null;
+
+    if (wallNormal) {
+      this.wallNormalVector.copy(wallNormal);
+      s.wallNormal = this.wallNormalVector;
+    } else s.wallNormal = null;
 
     this.wasGrounded = grounded;
   }

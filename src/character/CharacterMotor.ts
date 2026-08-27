@@ -4,6 +4,11 @@ import GameConfig from "../config/GameConfig";
 import CharacterConfig from "./CharacterConfig";
 import type CharacterInput from "./CharacterInput";
 
+const WORLD_UP = new THREE.Vector3(0, 1, 0);
+
+const _cross = new THREE.Vector3();
+const _targetVelocity = new THREE.Vector3();
+
 export default class CharacterMotor {
   private jumped = false;
   private grounded = false;
@@ -16,6 +21,10 @@ export default class CharacterMotor {
   private horizontalVelocity = new THREE.Vector3();
   private facingDirection = new THREE.Vector3(0, 0, -1);
   private desiredFacingDirection = new THREE.Vector3(0, 0, -1);
+
+  private movementDelta = new THREE.Vector3();
+  private currentVelocity = new THREE.Vector3();
+
   private capabilities = { canJump: true, canSprint: false };
   private resolveCapabilities(): void {
     this.capabilities = {
@@ -46,21 +55,21 @@ export default class CharacterMotor {
       : CharacterConfig.movement.speed;
     if (this.crouched) speed *= CharacterConfig.movement.crouchMultiplier;
 
-    const targetVelocity = input.direction.clone().multiplyScalar(speed);
+    _targetVelocity.copy(input.direction).multiplyScalar(speed);
 
     const acceleration = CharacterConfig.movement.acceleration;
     const deceleration = CharacterConfig.movement.deceleration;
     const rate = input.direction.lengthSq() > 0 ? acceleration : deceleration;
-    this.horizontalVelocity.lerp(targetVelocity, 1 - Math.exp(-rate * delta));
+    this.horizontalVelocity.lerp(_targetVelocity, 1 - Math.exp(-rate * delta));
 
     const threshold = CharacterConfig.movement.restVelocityThreshold;
     if (this.horizontalVelocity.lengthSq() < threshold * threshold)
       this.horizontalVelocity.set(0, 0, 0);
   }
   private getSignedAngle(from: THREE.Vector3, to: THREE.Vector3): number {
-    const cross = new THREE.Vector3().crossVectors(from, to);
+    _cross.crossVectors(from, to);
     const dot = THREE.MathUtils.clamp(from.dot(to), -1, 1);
-    return Math.atan2(cross.y, dot);
+    return Math.atan2(_cross.y, dot);
   }
   private updateFacingDirection(input: CharacterInput, delta: number): void {
     if (input.direction.lengthSq() <= 0.0001) {
@@ -79,12 +88,12 @@ export default class CharacterMotor {
     const maxTurnAngle = maxTurnSpeed * delta;
     const turnAngle = THREE.MathUtils.clamp(angle, -maxTurnAngle, maxTurnAngle);
 
-    this.facingDirection.applyAxisAngle(new THREE.Vector3(0, 1, 0), turnAngle);
+    this.facingDirection.applyAxisAngle(WORLD_UP, turnAngle);
     this.facingDirection.normalize();
     this.turnSpeed = Math.abs(turnAngle) / delta;
   }
   private getMovement(delta: number): THREE.Vector3 {
-    return new THREE.Vector3(
+    return this.movementDelta.set(
       this.horizontalVelocity.x * delta,
       this.verticalVelocity * delta,
       this.horizontalVelocity.z * delta,
@@ -110,7 +119,7 @@ export default class CharacterMotor {
   }
   public get velocity(): THREE.Vector3 {
     const reportedVertical = this.grounded ? 0 : this.verticalVelocity;
-    return new THREE.Vector3(
+    return this.currentVelocity.set(
       this.horizontalVelocity.x,
       reportedVertical,
       this.horizontalVelocity.z,
