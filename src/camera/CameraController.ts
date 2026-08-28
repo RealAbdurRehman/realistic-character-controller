@@ -8,9 +8,12 @@ const _right = new THREE.Vector3();
 const _movementDir = new THREE.Vector3();
 
 export default class CameraController {
+  private isInitialized = false;
+
   private yaw = 0;
   private pitch = 0;
   private readonly camera: Camera;
+  private readonly currentTarget = new THREE.Vector3();
   constructor(camera: Camera) {
     this.camera = camera;
     this.addEventListeners();
@@ -42,8 +45,22 @@ export default class CameraController {
 
     this.camera.instance.lookAt(target.x, target.y + 1, target.z);
   }
-  public update(target: THREE.Vector3): void {
-    this.follow(target);
+  public update(target: THREE.Vector3, delta: number): void {
+    if (!this.isInitialized) {
+      this.currentTarget.copy(target);
+      this.isInitialized = true;
+    }
+
+    this.currentTarget.x = target.x;
+    this.currentTarget.z = target.z;
+
+    this.currentTarget.y = THREE.MathUtils.lerp(
+      this.currentTarget.y,
+      target.y,
+      1 - Math.exp(-GameConfig.camera.verticalSpeed * delta),
+    );
+
+    this.follow(this.currentTarget);
   }
   public getForwardDirection(): THREE.Vector3 {
     return _forward.set(-Math.sin(this.yaw), 0, -Math.cos(this.yaw));

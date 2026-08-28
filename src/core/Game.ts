@@ -81,7 +81,7 @@ export default class Game {
   private update(): void {
     const position = this.character.getInterpolatedPosition(this.time.alpha);
 
-    this.cameraController.update(position);
+    this.cameraController.update(position, this.time.delta);
     this.character.update(this.time.alpha, this.time.delta);
 
     this.physicsDebug.update();
