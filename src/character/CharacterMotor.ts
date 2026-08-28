@@ -55,7 +55,21 @@ export default class CharacterMotor {
       : CharacterConfig.movement.speed;
     if (this.crouched) speed *= CharacterConfig.movement.crouchMultiplier;
 
-    _targetVelocity.copy(input.direction).multiplyScalar(speed);
+    let turnResistance: number =
+      CharacterConfig.movement.turnResistance.aligned;
+    if (input.direction.lengthSq() > 0 && this.facingDirection.lengthSq() > 0) {
+      const angle = this.facingDirection.angleTo(this.desiredFacingDirection);
+      const { aligned, opposite } = CharacterConfig.movement.turnResistance;
+      turnResistance = THREE.MathUtils.lerp(
+        aligned,
+        opposite,
+        Math.min(angle / Math.PI, 1.0),
+      );
+    }
+
+    _targetVelocity
+      .copy(input.direction)
+      .multiplyScalar(speed * turnResistance);
 
     const acceleration = CharacterConfig.movement.acceleration;
     const deceleration = CharacterConfig.movement.deceleration;

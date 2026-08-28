@@ -75,6 +75,7 @@ export default class Game {
       this.physics.instance,
       GameConfig.spawn.player.clone(),
       characterGltf.scene,
+      characterGltf.animations,
     );
 
     requestAnimationFrame(this.animate);

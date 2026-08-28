@@ -1,9 +1,12 @@
 import * as THREE from "three";
 import { SkeletonUtils } from "three/examples/jsm/Addons.js";
 
-import CharacterConfig from "./CharacterConfig";
-import enableObjectShadow from "../utils/enableObjectShadow";
-import enableModelShadow from "../utils/enableModelShadow";
+import CharacterConfig from "../CharacterConfig";
+import enableObjectShadow from "../../utils/enableObjectShadow";
+import enableModelShadow from "../../utils/enableModelShadow";
+
+import type CharacterState from "../CharacterState";
+import CharacterAnimator from "../animation/CharactorAnimator";
 
 export default class CharacterModel {
   private isFirstUpdate = true;
@@ -11,30 +14,25 @@ export default class CharacterModel {
   private smoothedY = 0;
   private crouchAmount = 0;
   private modelRoot: THREE.Group | null = null;
+  private animator: CharacterAnimator | null = null;
 
   private readonly crouchSpeed = 12;
   public readonly instance: THREE.Group;
-  constructor(scene: THREE.Scene, gltfScene?: THREE.Group) {
+  constructor(
+    scene: THREE.Scene,
+    gltfScene?: THREE.Group,
+    animations?: THREE.AnimationClip[],
+  ) {
     this.instance = new THREE.Group();
     scene.add(this.instance);
 
-    if (gltfScene) this.setModel(gltfScene);
+    if (gltfScene) this.setModel(gltfScene, animations);
     else this.createFallbackMesh();
   }
-  private createFallbackMesh(): void {
-    const geometry = new THREE.CapsuleGeometry(
-      CharacterConfig.collider.radius,
-      CharacterConfig.collider.standingHalfHeight * 2,
-    );
-    const material = new THREE.MeshStandardMaterial({ color: 0x2266cc });
-    const mesh = new THREE.Mesh(geometry, material);
-
-    mesh.name = "fallback_mesh";
-    enableObjectShadow({ object: mesh });
-
-    this.instance.add(mesh);
-  }
-  public setModel(gltfScene: THREE.Group): void {
+  public setModel(
+    gltfScene: THREE.Group,
+    animations?: THREE.AnimationClip[],
+  ): void {
     const fallback = this.instance.getObjectByName("fallback_mesh");
     if (fallback) this.instance.remove(fallback);
 
@@ -49,11 +47,27 @@ export default class CharacterModel {
     this.modelRoot.position.set(0, feetOffset, 0);
 
     this.instance.add(this.modelRoot);
+
+    if (animations && animations.length > 0)
+      this.animator = new CharacterAnimator(this.modelRoot, animations);
+  }
+  private createFallbackMesh(): void {
+    const geometry = new THREE.CapsuleGeometry(
+      CharacterConfig.collider.radius,
+      CharacterConfig.collider.standingHalfHeight * 2,
+    );
+    const material = new THREE.MeshStandardMaterial({ color: 0x2266cc });
+    const mesh = new THREE.Mesh(geometry, material);
+
+    mesh.name = "fallback_mesh";
+    enableObjectShadow({ object: mesh });
+
+    this.instance.add(mesh);
   }
   public update(
     position: THREE.Vector3,
     rotation: THREE.Quaternion,
-    crouched: boolean,
+    state: CharacterState,
     delta: number,
   ): void {
     if (this.isFirstUpdate) {
@@ -70,7 +84,7 @@ export default class CharacterModel {
     this.instance.position.set(position.x, this.smoothedY, position.z);
     this.instance.quaternion.copy(rotation);
 
-    const target = crouched ? 1 : 0;
+    const target = state.isCrouched ? 1 : 0;
     this.crouchAmount = THREE.MathUtils.lerp(
       this.crouchAmount,
       target,
@@ -79,5 +93,7 @@ export default class CharacterModel {
 
     const heightScale = THREE.MathUtils.lerp(1, 0.65, this.crouchAmount);
     this.instance.scale.y = heightScale;
+
+    if (this.animator) this.animator.update(state, delta);
   }
 }

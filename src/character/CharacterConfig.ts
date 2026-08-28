@@ -1,15 +1,16 @@
 const CharacterConfig = {
   movement: {
-    speed: 5,
-    sprintSpeed: 8,
-    rotationSpeed: 6,
-    acceleration: 8,
-    deceleration: 10,
+    speed: 3.2,
+    crouchMultiplier: 0.42,
+    acceleration: 3.5,
+    deceleration: 5.0,
+    sprintSpeed: 6.4,
+    rotationSpeed: 3.0,
     restVelocityThreshold: 0.05,
-    crouchMultiplier: 0.5,
+    turnResistance: { aligned: 1.0, opposite: 0.6 },
   },
   crouch: { halfHeight: 0.5 },
-  jump: { force: 8 },
+  jump: { force: 6.2 },
   slope: {
     maxClimbAngle: 45,
     minSlideAngle: 30,
@@ -20,9 +21,7 @@ const CharacterConfig = {
     autostep: { maxHeight: 0.5, minWidth: 0.2 },
     snapToGround: 0.1,
   },
-  model: {
-    scale: 1.67,
-  },
+  model: { scale: 1.67 },
 } as const;
 
 export default CharacterConfig;
