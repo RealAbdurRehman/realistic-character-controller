@@ -12,7 +12,7 @@ interface EnableLightShadowOptions {
 
 export default function enableLightShadow({
   light,
-  far = 2000,
+  far = 60,
   mapSize = { width: 4096, height: 4096 },
   d = 20,
 }: EnableLightShadowOptions): void {
@@ -21,8 +21,8 @@ export default function enableLightShadow({
   light.shadow.camera.near = 0.1;
   light.shadow.camera.far = far;
 
-  light.shadow.bias = -0.00005;
-  light.shadow.normalBias = 0.03;
+  light.shadow.bias = -0.0001;
+  light.shadow.normalBias = 0.0012;
   light.shadow.mapSize.set(mapSize.width, mapSize.height);
 
   light.shadow.camera.top = d;

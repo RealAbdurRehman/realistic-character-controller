@@ -18,7 +18,7 @@ export default class Scene {
     this.instance.add(ambientLight);
 
     const keyLight = new THREE.DirectionalLight(0xffffff, 1.5);
-    keyLight.position.set(4, 8, 5);
+    keyLight.position.set(4, 25, 5);
     this.instance.add(keyLight);
 
     enableLightShadow({ light: keyLight });
