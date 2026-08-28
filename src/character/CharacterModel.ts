@@ -6,6 +6,9 @@ import enableObjectShadow from "../utils/enableObjectShadow";
 import enableModelShadow from "../utils/enableModelShadow";
 
 export default class CharacterModel {
+  private isFirstUpdate = true;
+
+  private smoothedY = 0;
   private crouchAmount = 0;
   private modelRoot: THREE.Group | null = null;
 
@@ -53,7 +56,18 @@ export default class CharacterModel {
     crouched: boolean,
     delta: number,
   ): void {
-    this.instance.position.copy(position);
+    if (this.isFirstUpdate) {
+      this.smoothedY = position.y;
+      this.isFirstUpdate = false;
+    }
+
+    this.smoothedY = THREE.MathUtils.lerp(
+      this.smoothedY,
+      position.y,
+      1 - Math.exp(-12 * delta),
+    );
+
+    this.instance.position.set(position.x, this.smoothedY, position.z);
     this.instance.quaternion.copy(rotation);
 
     const target = crouched ? 1 : 0;
