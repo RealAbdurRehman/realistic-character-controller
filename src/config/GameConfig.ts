@@ -12,7 +12,7 @@ const GameConfig = {
     far: 1000,
     sensitivity: 0.002,
     height: 2,
-    distance: 6,
+    distance: 4,
     verticalSpeed: 6,
   },
   lighting: { keyLight: { position: { x: 4, y: 25, z: 5 } } },
