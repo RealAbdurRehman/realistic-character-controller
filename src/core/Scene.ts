@@ -1,11 +1,15 @@
 import * as THREE from "three";
 
+import GameConfig from "../config/GameConfig";
 import enableLightShadow from "../utils/enableLightShadow";
 
 export default class Scene {
   public readonly instance: THREE.Scene;
+  public readonly keyLight: THREE.DirectionalLight;
   constructor() {
     this.instance = new THREE.Scene();
+    this.keyLight = new THREE.DirectionalLight(0xffffff, 1.5);
+
     this.init();
   }
   private init(): void {
@@ -17,10 +21,9 @@ export default class Scene {
     const ambientLight = new THREE.AmbientLight(0xffffff, 0.3);
     this.instance.add(ambientLight);
 
-    const keyLight = new THREE.DirectionalLight(0xffffff, 1.5);
-    keyLight.position.set(4, 25, 5);
-    this.instance.add(keyLight);
-
-    enableLightShadow({ light: keyLight });
+    const position = GameConfig.lighting.keyLight.position;
+    this.keyLight.position.set(position.x, position.y, position.z);
+    this.instance.add(this.keyLight);
+    enableLightShadow({ light: this.keyLight });
   }
 }

@@ -9,6 +9,7 @@ import PhysicsDebug from "../debug/PhysicsDebug";
 
 import Ground from "../environment/Ground";
 import TestEnvironment from "../environment/TestEnvironment";
+import ShadowController from "../environment/ShadowController";
 
 import Input from "../input/Input";
 import Character from "../character/Character";
@@ -33,6 +34,8 @@ export default class Game {
 
   private readonly input: Input;
 
+  private readonly shadowController: ShadowController;
+
   private character!: Character;
   constructor() {
     this.loadingScreen = new LoadingScreen();
@@ -53,6 +56,7 @@ export default class Game {
 
     new Ground(this.scene.instance, this.physics.instance);
     new TestEnvironment(this.scene.instance, this.physics.instance);
+    this.shadowController = new ShadowController(this.scene.keyLight);
 
     this.addEventListeners();
   }
@@ -81,6 +85,7 @@ export default class Game {
   private update(): void {
     const position = this.character.getInterpolatedPosition(this.time.alpha);
 
+    this.shadowController.update(position);
     this.cameraController.update(position, this.time.delta);
     this.character.update(this.time.alpha, this.time.delta);
 

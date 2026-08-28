@@ -15,6 +15,7 @@ const GameConfig = {
     distance: 6,
     verticalSpeed: 6,
   },
+  lighting: { keyLight: { position: { x: 4, y: 25, z: 5 } } },
   physics: { gravity: new THREE.Vector3(0, -20, 0) },
   debug: { physics: false },
   spawn: {

@@ -14,7 +14,7 @@ export default function enableLightShadow({
   light,
   far = 60,
   mapSize = { width: 4096, height: 4096 },
-  d = 10,
+  d = 20,
 }: EnableLightShadowOptions): void {
   light.castShadow = true;
 
