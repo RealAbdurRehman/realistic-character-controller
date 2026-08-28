@@ -13,7 +13,7 @@ const GameConfig = {
     sensitivity: 0.002,
     height: 2,
     distance: 6,
-    verticalSpeed: 12,
+    verticalSpeed: 6,
   },
   physics: { gravity: new THREE.Vector3(0, -20, 0) },
   debug: { physics: false },
