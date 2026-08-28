@@ -21,7 +21,7 @@ const CharacterConfig = {
     snapToGround: 0.1,
   },
   model: {
-    scale: 1.68,
+    scale: 1.67,
   },
 } as const;
 
