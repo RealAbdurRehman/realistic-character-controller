@@ -13,11 +13,7 @@ export default class Ground {
     const material = new THREE.MeshStandardMaterial({ color: 0x7c9818 });
 
     const mesh = new THREE.Mesh(geometry, material);
-    enableObjectShadow({
-      object: mesh,
-      shouldCast: false,
-      shouldReceive: true,
-    });
+    enableObjectShadow({ object: mesh, shouldCast: false });
 
     scene.add(mesh);
   }
