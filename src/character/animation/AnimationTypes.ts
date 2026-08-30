@@ -28,15 +28,15 @@ export const LocomotionConfig = {
 
 export const AnimationConfig = {
   transitions: {
-    locomotion: 7,
-    fullBodyIn: 7,
-    fullBodyOut: 10,
-    jumpToFall: 0.16,
+    locomotion: 8.0,
+    fullBodyIn: 10.0,
+    fullBodyOut: 12.0,
+    jumpToFall: 0.6,
     landIn: 14,
     landOut: 6,
   },
   vertical: {
-    minimumJumpPoseTime: 0.16,
+    minimumJumpPoseTime: 0.7,
     fallVelocityThreshold: -0.45,
     minimumLandingHeight: 0.12,
     minimumLandHoldTime: 0.22,

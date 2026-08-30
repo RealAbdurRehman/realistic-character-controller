@@ -106,12 +106,26 @@ export default class CharacterAnimator {
     const clipMap: AnimationClipMap = {};
     for (const clip of clips) {
       const name = clip.name.toLowerCase();
-      if (name.includes("idle1")) clipMap.Idle = clip;
-      else if (name === "walk") clipMap.Walk = clip;
-      else if (name === "run") clipMap.Run = clip;
-      else if (name.includes("jumpmove")) clipMap.Jump = clip;
-      else if (name.includes("fall")) clipMap.Fall = clip;
-      else if (name.includes("land")) clipMap.Land = clip;
+      switch (name) {
+        case "idle1":
+          clipMap.Idle = clip;
+          break;
+        case "walk":
+          clipMap.Walk = clip;
+          break;
+        case "run":
+          clipMap.Run = clip;
+          break;
+        case "jumpmove":
+          clipMap.Jump = clip;
+          break;
+        case "fall":
+          clipMap.Fall = clip;
+          break;
+        case "land":
+          clipMap.Land = clip;
+          break;
+      }
     }
 
     for (const state of LOCOMOTION_STATES) {
