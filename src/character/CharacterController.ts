@@ -105,4 +105,7 @@ export default class CharacterController {
       .copy(this.previousQuaternion)
       .slerp(this.currentQuaternion, alpha);
   }
+  public consumeFrameEvents(): void {
+    this.stateTracker.consumeFrameEvents();
+  }
 }

@@ -18,6 +18,7 @@ export default class CharacterMotor {
 
   private turnSpeed = 0;
   private verticalVelocity = 0;
+  private jumpCooldownRemaining = 0;
   private horizontalVelocity = new THREE.Vector3();
   private facingDirection = new THREE.Vector3(0, 0, -1);
   private desiredFacingDirection = new THREE.Vector3(0, 0, -1);
@@ -28,7 +29,8 @@ export default class CharacterMotor {
   private capabilities = { canJump: true, canSprint: false };
   private resolveCapabilities(): void {
     this.capabilities = {
-      canJump: this.grounded && !this.crouched,
+      canJump:
+        this.grounded && !this.crouched && this.jumpCooldownRemaining <= 0,
       canSprint: !this.crouched,
     };
   }
@@ -37,6 +39,7 @@ export default class CharacterMotor {
     if (!input.jumping || !this.capabilities.canJump) return;
 
     this.verticalVelocity = CharacterConfig.jump.force;
+    this.jumpCooldownRemaining = CharacterConfig.jump.cooldown;
     this.jumped = true;
   }
   private updateGravity(delta: number): void {
@@ -127,6 +130,11 @@ export default class CharacterMotor {
     );
   }
   public fixedUpdate(input: CharacterInput, delta: number): THREE.Vector3 {
+    this.jumpCooldownRemaining = Math.max(
+      0,
+      this.jumpCooldownRemaining - delta,
+    );
+
     this.resolveCapabilities();
     this.tryJump(input);
     this.updateGravity(delta);

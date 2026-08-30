@@ -13,7 +13,7 @@ const CharacterConfig = {
     terminalFallSpeed: 18,
   },
   crouch: { halfHeight: 0.5 },
-  jump: { force: 7.2 },
+  jump: { force: 7.2, cooldown: 0.15 },
   slope: { maxClimbAngle: 45, minSlideAngle: 30 },
   collider: { radius: 0.5, standingHalfHeight: 1 },
   controller: {

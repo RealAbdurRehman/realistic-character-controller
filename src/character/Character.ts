@@ -30,4 +30,7 @@ export default class Character {
   public getInterpolatedPosition(alpha: number): THREE.Vector3 {
     return this.controller.getInterpolatedPosition(alpha);
   }
+  public consumeFrameEvents(): void {
+    this.controller.consumeFrameEvents();
+  }
 }

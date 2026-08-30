@@ -4,14 +4,16 @@ export type LocomotionState = "Idle" | "Walk" | "Run";
 export type VerticalState = "Jump" | "Fall" | "Land";
 export type AnimationState = LocomotionState | VerticalState;
 
+export type JumpVariant = "Idle" | "Move";
+
 export interface AnimationClipMap {
   Idle?: THREE.AnimationClip[];
   Walk?: THREE.AnimationClip;
   Run?: THREE.AnimationClip;
-  Jump?: THREE.AnimationClip;
+  JumpIdle?: THREE.AnimationClip;
+  JumpMove?: THREE.AnimationClip;
   Fall?: THREE.AnimationClip;
   Land?: THREE.AnimationClip;
-  [key: string]: THREE.AnimationClip | THREE.AnimationClip[] | undefined;
 }
 
 export interface LocomotionWeights {
@@ -37,9 +39,11 @@ export const AnimationConfig = {
   },
   vertical: {
     minimumJumpPoseTime: 0.7,
-    fallVelocityThreshold: -0.45,
+    minimumLandingSpeed: 0.3,
+    fallVelocityThreshold: -1.0,
     minimumLandingHeight: 0.12,
     minimumLandHoldTime: 0.22,
+    jumpMoveThreshold: 0.1,
   },
   idle: {
     crossfadeDuration: 2.0,

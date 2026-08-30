@@ -37,7 +37,16 @@ export default class CharacterStateTracker {
   private airborneTime = 0;
   private sinceJump = Infinity;
   private peakHeight = 0;
+  private peakFallSpeed = 0;
   private currentFallHeight = 0;
+
+  private pendingJustLanded = false;
+  private pendingJustLeftGround = false;
+  private pendingJustJumped = false;
+  private pendingJustStartedMoving = false;
+  private pendingJustStoppedMoving = false;
+  private pendingJustCrouched = false;
+  private pendingJustStood = false;
 
   private readonly groundNormalVector = new THREE.Vector3();
   private readonly wallNormalVector = new THREE.Vector3();
@@ -78,6 +87,7 @@ export default class CharacterStateTracker {
     isFalling: false,
     isRising: false,
     fallHeight: 0,
+    fallSpeed: 0,
     justJumped: false,
 
     groundNormal: null,
@@ -103,6 +113,9 @@ export default class CharacterStateTracker {
         ? params.position.y
         : Math.max(this.peakHeight, params.position.y);
       this.currentFallHeight = Math.max(0, this.peakHeight - params.position.y);
+      this.peakFallSpeed = this.wasGrounded
+        ? Math.max(0, -params.velocity.y)
+        : Math.max(this.peakFallSpeed, -params.velocity.y);
     }
 
     const slopeAngle = params.groundNormal
@@ -111,9 +124,12 @@ export default class CharacterStateTracker {
 
     const state = this.state;
     state.grounded = params.grounded;
-    state.justLanded = params.grounded && !this.wasGrounded;
-    state.justLeftGround =
+
+    this.pendingJustLanded ||= params.grounded && !this.wasGrounded;
+    this.pendingJustLeftGround ||=
       !params.grounded && this.wasGrounded && !params.jumped;
+    state.justLanded = this.pendingJustLanded;
+    state.justLeftGround = this.pendingJustLeftGround;
 
     state.timeSinceGrounded = this.airborneTime;
     state.timeSinceJump = this.sinceJump;
@@ -150,19 +166,30 @@ export default class CharacterStateTracker {
     }
 
     state.wantsToMove = params.wantsToMove;
-    state.justStartedMoving = params.wantsToMove && !this.wasWantsToMove;
-    state.justStoppedMoving = !params.wantsToMove && this.wasWantsToMove;
+
+    this.pendingJustStartedMoving ||=
+      params.wantsToMove && !this.wasWantsToMove;
+    this.pendingJustStoppedMoving ||=
+      !params.wantsToMove && this.wasWantsToMove;
+    state.justStartedMoving = this.pendingJustStartedMoving;
+    state.justStoppedMoving = this.pendingJustStoppedMoving;
 
     state.isMoving = isMoving;
     state.isSprinting = params.sprinting && isMoving;
     state.isCrouched = params.crouched;
-    state.justCrouched = params.crouched && !this.wasCrouched;
-    state.justStood = !params.crouched && this.wasCrouched;
+
+    this.pendingJustCrouched ||= params.crouched && !this.wasCrouched;
+    this.pendingJustStood ||= !params.crouched && this.wasCrouched;
+    state.justCrouched = this.pendingJustCrouched;
+    state.justStood = this.pendingJustStood;
 
     state.isFalling = !params.grounded && params.velocity.y < -restThreshold;
     state.isRising = !params.grounded && params.velocity.y > restThreshold;
     state.fallHeight = this.currentFallHeight;
-    state.justJumped = params.jumped;
+    state.fallSpeed = this.peakFallSpeed;
+
+    this.pendingJustJumped ||= params.jumped;
+    state.justJumped = this.pendingJustJumped;
 
     if (params.groundNormal) {
       this.groundNormalVector.copy(params.groundNormal);
@@ -186,5 +213,14 @@ export default class CharacterStateTracker {
   }
   public getState(): Readonly<CharacterState> {
     return this.state;
+  }
+  public consumeFrameEvents(): void {
+    this.pendingJustLanded = false;
+    this.pendingJustLeftGround = false;
+    this.pendingJustJumped = false;
+    this.pendingJustStartedMoving = false;
+    this.pendingJustStoppedMoving = false;
+    this.pendingJustCrouched = false;
+    this.pendingJustStood = false;
   }
 }

@@ -6,6 +6,7 @@ import {
   type AnimationClipMap,
   type LocomotionState,
   type LocomotionWeights,
+  type JumpVariant,
   type VerticalState,
 } from "./AnimationTypes";
 import type CharacterState from "../CharacterState";
@@ -25,6 +26,7 @@ export default class CharacterAnimator {
   private fullBodyTransition = 1;
   private upperBodyLandWeight = 0;
 
+  private wasIdle = false;
   private idleTransition = 1;
   private activeIdleIndex = 0;
   private nextIdleIndex: number | null = null;
@@ -48,6 +50,8 @@ export default class CharacterAnimator {
     VerticalState,
     THREE.AnimationAction
   >();
+
+  private readonly jumpActions = new Map<JumpVariant, THREE.AnimationAction>();
 
   private readonly idleLowerActions: THREE.AnimationAction[] = [];
   private readonly idleUpperActions: THREE.AnimationAction[] = [];
@@ -127,8 +131,11 @@ export default class CharacterAnimator {
         case "run":
           clipMap.Run = clip;
           break;
+        case "jumpidle":
+          clipMap.JumpIdle = clip;
+          break;
         case "jumpmove":
-          clipMap.Jump = clip;
+          clipMap.JumpMove = clip;
           break;
         case "fall":
           clipMap.Fall = clip;
@@ -215,7 +222,22 @@ export default class CharacterAnimator {
       if (state === "Run") this.runDuration = source.duration;
     }
 
-    for (const state of ["Jump", "Fall", "Land"] as VerticalState[]) {
+    for (const variant of ["Idle", "Move"] as JumpVariant[]) {
+      const source = variant === "Idle" ? clipMap.JumpIdle : clipMap.JumpMove;
+      if (!source) continue;
+
+      const fullBodyClip = this.createMaskedClip(
+        source,
+        `${source.name}_FullBody`,
+        (boneName) => this.allBoneNames.has(boneName),
+      );
+      this.jumpActions.set(
+        variant,
+        this.createAction(fullBodyClip, THREE.LoopOnce, 1),
+      );
+    }
+
+    for (const state of ["Fall", "Land"] as const) {
       const source = clipMap[state];
       if (!source) continue;
 
@@ -278,6 +300,57 @@ export default class CharacterAnimator {
       index = Math.floor(Math.random() * count);
     return index;
   }
+  private resetIdleToFirst(): void {
+    if (this.idleLowerActions.length === 0) return;
+
+    if (this.previousIdleIndex !== null && this.nextIdleIndex !== null) {
+      const discard =
+        this.idleTransition >= 0.5
+          ? this.previousIdleIndex
+          : this.nextIdleIndex;
+      const keep =
+        this.idleTransition >= 0.5
+          ? this.nextIdleIndex
+          : this.previousIdleIndex;
+
+      this.idleLowerActions[discard].stop();
+      this.idleUpperActions[discard]?.stop();
+
+      this.activeIdleIndex = keep;
+      this.previousIdleIndex = null;
+      this.nextIdleIndex = null;
+    }
+
+    if (this.activeIdleIndex === 0) {
+      this.idleTransition = 1;
+      return;
+    }
+
+    this.previousIdleIndex = this.activeIdleIndex;
+    this.nextIdleIndex = 0;
+
+    const nextLower = this.idleLowerActions[0];
+    nextLower.reset();
+    nextLower.setEffectiveWeight(0);
+    nextLower.play();
+
+    const nextUpper = this.idleUpperActions[0];
+    if (nextUpper) {
+      nextUpper.reset();
+      nextUpper.setEffectiveWeight(0);
+      nextUpper.play();
+    }
+
+    this.idleTransition = 0;
+  }
+  private checkIdleReset(
+    state: CharacterState,
+    verticalState: VerticalState | null,
+  ): void {
+    const isIdling = state.horizontalSpeed <= 0.05 && verticalState === null;
+    if (isIdling && !this.wasIdle) this.resetIdleToFirst();
+    this.wasIdle = isIdling;
+  }
   private beginIdleTransition(): void {
     if (this.idleLowerActions.length <= 1) return;
     if (this.idleTransition < 1) return;
@@ -304,6 +377,21 @@ export default class CharacterAnimator {
     state: CharacterState,
     delta: number,
   ): VerticalState | null {
+    if (state.justJumped) return "Jump";
+
+    if (!state.grounded) {
+      const shouldHoldJumpPose =
+        this.activeVerticalState === "Jump" &&
+        this.verticalStateAge < AnimationConfig.vertical.minimumJumpPoseTime;
+
+      if (
+        shouldHoldJumpPose ||
+        state.verticalVelocity > AnimationConfig.vertical.fallVelocityThreshold
+      )
+        return "Jump";
+      return "Fall";
+    }
+
     if (this.activeVerticalState === "Land") {
       this.landTimeRemaining -= delta;
       if (this.landTimeRemaining > 0) return "Land";
@@ -311,25 +399,20 @@ export default class CharacterAnimator {
 
     if (
       state.justLanded &&
-      state.fallHeight >= AnimationConfig.vertical.minimumLandingHeight
+      (state.fallHeight >= AnimationConfig.vertical.minimumLandingHeight ||
+        state.fallSpeed >= AnimationConfig.vertical.minimumLandingSpeed)
     )
       return "Land";
 
-    if (state.grounded) return null;
-    const shouldHoldJumpPose =
-      this.activeVerticalState === "Jump" &&
-      this.verticalStateAge < AnimationConfig.vertical.minimumJumpPoseTime;
-
-    if (
-      state.justJumped ||
-      shouldHoldJumpPose ||
-      state.verticalVelocity > AnimationConfig.vertical.fallVelocityThreshold
-    )
-      return "Jump";
-
-    return "Fall";
+    return null;
   }
-  private setVerticalState(next: VerticalState | null): void {
+  private getJumpAction(state: CharacterState): THREE.AnimationAction | null {
+    return this.jumpActions.get(this.getJumpVariant(state)) ?? null;
+  }
+  private setVerticalState(
+    state: CharacterState,
+    next: VerticalState | null,
+  ): void {
     if (next === this.activeVerticalState) return;
 
     this.verticalStateAge = 0;
@@ -352,7 +435,10 @@ export default class CharacterAnimator {
 
     if (next !== "Jump" && next !== "Fall") return;
 
-    const nextAction = this.fullBodyActions.get(next);
+    const nextAction =
+      next === "Jump"
+        ? this.getJumpAction(state)
+        : this.fullBodyActions.get("Fall");
     if (!nextAction) return;
 
     this.previousFullBodyAction = this.activeFullBodyAction;
@@ -364,6 +450,9 @@ export default class CharacterAnimator {
   }
   private updateFullBodyActions(delta: number): void {
     for (const action of this.fullBodyActions.values())
+      action.setEffectiveWeight(0);
+
+    for (const action of this.jumpActions.values())
       action.setEffectiveWeight(0);
 
     if (!this.activeFullBodyAction || this.fullBodyWeight <= 0.001) return;
@@ -464,7 +553,6 @@ export default class CharacterAnimator {
       if (lower && upper) upper.time = lower.time;
     }
   }
-
   private updatePlaybackRate(speed: number, delta: number): void {
     let targetScale = 1;
     if (speed > 0.1) {
@@ -490,7 +578,8 @@ export default class CharacterAnimator {
       actions.get("Run")?.setEffectiveTimeScale(this.smoothedTimeScale);
     }
   }
-  private checkIdleTransition(): void {
+  private checkIdleTransition(state: CharacterState): void {
+    if (state.horizontalSpeed > 0.05) return;
     if (this.idleLowerActions.length <= 1) return;
     if (this.idleTransition < 1) return;
 
@@ -530,7 +619,7 @@ export default class CharacterAnimator {
     this.verticalStateAge += delta;
 
     const verticalState = this.resolveVerticalState(state, delta);
-    this.setVerticalState(verticalState);
+    this.setVerticalState(state, verticalState);
 
     const wantsFullBody = verticalState === "Jump" || verticalState === "Fall";
     const wantsUpperLand =
@@ -557,7 +646,8 @@ export default class CharacterAnimator {
     );
     this.upperBodyLandAction?.setEffectiveWeight(this.upperBodyLandWeight);
 
-    this.checkIdleTransition();
+    this.checkIdleReset(state, verticalState);
+    this.checkIdleTransition(state);
     this.updateIdleTransition(delta);
     this.updateLocomotionWeights(state, delta);
     this.syncLocomotionPhases();
@@ -565,5 +655,10 @@ export default class CharacterAnimator {
     this.updateFullBodyActions(delta);
 
     this.mixer.update(delta);
+  }
+  private getJumpVariant(state: CharacterState): JumpVariant {
+    return state.horizontalSpeed > AnimationConfig.vertical.jumpMoveThreshold
+      ? "Move"
+      : "Idle";
   }
 }

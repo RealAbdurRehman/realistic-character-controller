@@ -117,6 +117,8 @@ export default class Game {
 
     this.update();
     this.render();
+
+    this.character.consumeFrameEvents();
   };
   private resize = (): void => {
     this.camera.resize();
