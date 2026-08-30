@@ -45,6 +45,10 @@ export default class CharacterMotor {
       this.verticalVelocity = 0;
 
     this.verticalVelocity += GameConfig.physics.gravity.y * delta;
+    this.verticalVelocity = Math.max(
+      this.verticalVelocity,
+      -CharacterConfig.movement.terminalFallSpeed,
+    );
   }
   private updateHorizontalVelocity(input: CharacterInput, delta: number): void {
     const sprinting = input.sprinting && this.capabilities.canSprint;
@@ -71,9 +75,17 @@ export default class CharacterMotor {
       .copy(input.direction)
       .multiplyScalar(speed * turnResistance);
 
-    const acceleration = CharacterConfig.movement.acceleration;
-    const deceleration = CharacterConfig.movement.deceleration;
-    const rate = input.direction.lengthSq() > 0 ? acceleration : deceleration;
+    const baseRate =
+      input.direction.lengthSq() > 0
+        ? CharacterConfig.movement.acceleration
+        : CharacterConfig.movement.deceleration;
+    const airMultiplier = this.grounded
+      ? 1
+      : input.direction.lengthSq() > 0
+        ? CharacterConfig.movement.airAccelerationMultiplier
+        : CharacterConfig.movement.airDecelerationMultiplier;
+
+    const rate = baseRate * airMultiplier;
     this.horizontalVelocity.lerp(_targetVelocity, 1 - Math.exp(-rate * delta));
 
     const threshold = CharacterConfig.movement.restVelocityThreshold;

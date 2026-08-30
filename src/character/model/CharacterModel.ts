@@ -12,11 +12,9 @@ export default class CharacterModel {
   private isFirstUpdate = true;
 
   private smoothedY = 0;
-  private crouchAmount = 0;
   private modelRoot: THREE.Group | null = null;
   private animator: CharacterAnimator | null = null;
 
-  private readonly crouchSpeed = 12;
   public readonly instance: THREE.Group;
   constructor(
     scene: THREE.Scene,
@@ -83,16 +81,6 @@ export default class CharacterModel {
 
     this.instance.position.set(position.x, this.smoothedY, position.z);
     this.instance.quaternion.copy(rotation);
-
-    const target = state.isCrouched ? 1 : 0;
-    this.crouchAmount = THREE.MathUtils.lerp(
-      this.crouchAmount,
-      target,
-      1 - Math.exp(-this.crouchSpeed * delta),
-    );
-
-    const heightScale = THREE.MathUtils.lerp(1, 0.65, this.crouchAmount);
-    this.instance.scale.y = heightScale;
 
     if (this.animator) this.animator.update(state, delta);
   }

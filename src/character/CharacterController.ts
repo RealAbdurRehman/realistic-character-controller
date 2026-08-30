@@ -15,15 +15,15 @@ export default class CharacterController {
   private currentPosition: THREE.Vector3;
   private previousPosition: THREE.Vector3;
 
-  private previousQuaternion = new THREE.Quaternion();
-  private currentQuaternion = new THREE.Quaternion();
+  private readonly previousQuaternion = new THREE.Quaternion();
+  private readonly currentQuaternion = new THREE.Quaternion();
   private readonly interpolatedQuaternion = new THREE.Quaternion();
+  private readonly interpolatedPosition = new THREE.Vector3();
 
   private readonly motor: CharacterMotor;
   private readonly physics: CharacterPhysics;
   private readonly stateTracker: CharacterStateTracker;
-  private readonly interpolatedPosition = new THREE.Vector3();
-  constructor(world: RAPIER.World, position: THREE.Vector3) {
+  public constructor(world: RAPIER.World, position: THREE.Vector3) {
     this.motor = new CharacterMotor();
     this.physics = new CharacterPhysics(world, position);
     this.stateTracker = new CharacterStateTracker();
@@ -37,12 +37,10 @@ export default class CharacterController {
     );
     this.currentQuaternion.copy(this.previousQuaternion);
   }
-  private updateState(delta: number): void {
+  private updateState(delta: number, input: CharacterInput): void {
     const groundNormal = this.physics.groundNormal;
-    const slopeAngleRad = groundNormal
-      ? groundNormal.angleTo(new THREE.Vector3(0, 1, 0))
-      : 0;
-    const maxClimbRad = THREE.MathUtils.degToRad(
+    const slopeAngle = groundNormal ? groundNormal.angleTo(WORLD_UP) : 0;
+    const maxClimbAngle = THREE.MathUtils.degToRad(
       CharacterConfig.slope.maxClimbAngle,
     );
 
@@ -62,8 +60,9 @@ export default class CharacterController {
       sprinting: this.motor.isSprinting,
       crouched: this.physics.isCrouched,
       jumped: this.motor.justJumped,
+      wantsToMove: input.direction.lengthSq() > 0.001,
       groundNormal,
-      sliding: this.physics.grounded && slopeAngleRad > maxClimbRad,
+      sliding: this.physics.grounded && slopeAngle > maxClimbAngle,
       ceilingBump: this.physics.ceilingBump,
       wallNormal: this.physics.wallNormal,
     });
@@ -72,12 +71,12 @@ export default class CharacterController {
     this.previousPosition.copy(this.physics.position);
     this.previousQuaternion.copy(this.currentQuaternion);
 
-    const grounded = this.physics.grounded;
-
     if (input.crouching && this.physics.grounded)
       this.physics.setCrouching(true);
     else if (!input.crouching) this.physics.setCrouching(false);
-    if (!grounded && this.physics.isCrouched) this.physics.setCrouching(false);
+
+    if (!this.physics.grounded && this.physics.isCrouched)
+      this.physics.setCrouching(false);
 
     this.motor.setCrouched(this.physics.isCrouched);
     this.motor.setGrounded(this.physics.grounded);
@@ -91,7 +90,7 @@ export default class CharacterController {
       Math.atan2(this.motor.facing.x, this.motor.facing.z),
     );
 
-    this.updateState(delta);
+    this.updateState(delta, input);
   }
   public getState(): Readonly<CharacterState> {
     return this.stateTracker.getState();

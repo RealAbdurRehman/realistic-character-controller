@@ -22,9 +22,16 @@ export default interface CharacterState {
   desiredFacing: THREE.Vector3;
   movementDirection: THREE.Vector3;
   localMovementDirection: THREE.Vector3;
+
+  wantsToMove: boolean;
+  justStartedMoving: boolean;
+  justStoppedMoving: boolean;
+
   isMoving: boolean;
   isSprinting: boolean;
   isCrouched: boolean;
+  justCrouched: boolean;
+  justStood: boolean;
 
   isFalling: boolean;
   isRising: boolean;
