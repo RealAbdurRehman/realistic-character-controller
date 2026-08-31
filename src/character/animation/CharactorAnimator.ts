@@ -25,7 +25,6 @@ export default class CharacterAnimator {
   private fullBodyWeight = 0;
   private fullBodyTransition = 1;
   private upperBodyLandWeight = 0;
-  private fullBodyTransitionDuration = 0.6;
 
   private wasIdle = false;
   private idleTransition = 1;
@@ -144,9 +143,6 @@ export default class CharacterAnimator {
         case "land":
           clipMap.Land = clip;
           break;
-        case "roll":
-          clipMap.Roll = clip;
-          break;
       }
     }
 
@@ -241,7 +237,7 @@ export default class CharacterAnimator {
       );
     }
 
-    for (const state of ["Fall", "Land", "Roll"] as const) {
+    for (const state of ["Fall", "Land"] as const) {
       const source = clipMap[state];
       if (!source) continue;
 
@@ -396,24 +392,17 @@ export default class CharacterAnimator {
       return "Fall";
     }
 
-    if (
-      this.activeVerticalState === "Land" ||
-      this.activeVerticalState === "Roll"
-    ) {
+    if (this.activeVerticalState === "Land") {
       this.landTimeRemaining -= delta;
-      if (this.landTimeRemaining > 0) return this.activeVerticalState;
+      if (this.landTimeRemaining > 0) return "Land";
     }
 
-    if (state.justLanded) {
-      if (state.fallHeight >= AnimationConfig.vertical.minimumRollHeight)
-        return "Roll";
-
-      if (
-        state.fallHeight >= AnimationConfig.vertical.minimumLandingHeight ||
-        state.fallSpeed >= AnimationConfig.vertical.minimumLandingSpeed
-      )
-        return "Land";
-    }
+    if (
+      state.justLanded &&
+      (state.fallHeight >= AnimationConfig.vertical.minimumLandingHeight ||
+        state.fallSpeed >= AnimationConfig.vertical.minimumLandingSpeed)
+    )
+      return "Land";
 
     return null;
   }
@@ -440,44 +429,37 @@ export default class CharacterAnimator {
           AnimationConfig.vertical.minimumLandHoldTime,
         );
       }
+
       return;
     }
 
-    if (next !== "Jump" && next !== "Fall" && next !== "Roll") return;
+    if (next !== "Jump" && next !== "Fall") return;
 
     const nextAction =
       next === "Jump"
         ? this.getJumpAction(state)
-        : this.fullBodyActions.get(next);
+        : this.fullBodyActions.get("Fall");
     if (!nextAction) return;
 
     this.previousFullBodyAction = this.activeFullBodyAction;
     this.activeFullBodyAction = nextAction;
     this.fullBodyTransition = 0;
 
-    this.fullBodyTransitionDuration =
-      next === "Roll"
-        ? AnimationConfig.transitions.fallToRoll
-        : AnimationConfig.transitions.jumpToFall;
-
     nextAction.reset();
     nextAction.play();
-
-    if (next === "Roll") this.landTimeRemaining = nextAction.getClip().duration;
   }
   private updateFullBodyActions(delta: number): void {
     for (const action of this.fullBodyActions.values())
       action.setEffectiveWeight(0);
+
     for (const action of this.jumpActions.values())
       action.setEffectiveWeight(0);
 
     if (!this.activeFullBodyAction || this.fullBodyWeight <= 0.001) return;
     if (this.previousFullBodyAction && this.fullBodyTransition < 1) {
-      this.fullBodyTransition = THREE.MathUtils.clamp(
-        this.fullBodyTransition + delta / this.fullBodyTransitionDuration,
-        0,
-        1,
-      );
+      this.fullBodyTransition =
+        this.fullBodyTransition +
+        delta / AnimationConfig.transitions.jumpToFall;
       this.previousFullBodyAction.setEffectiveWeight(
         this.fullBodyWeight * (1 - this.fullBodyTransition),
       );
@@ -485,7 +467,7 @@ export default class CharacterAnimator {
         this.fullBodyWeight * this.fullBodyTransition,
       );
 
-      if (this.fullBodyTransition >= 1) this.previousFullBodyAction = null;
+      if (this.fullBodyTransition === 1) this.previousFullBodyAction = null;
 
       return;
     }
@@ -639,10 +621,7 @@ export default class CharacterAnimator {
     const verticalState = this.resolveVerticalState(state, delta);
     this.setVerticalState(state, verticalState);
 
-    const wantsFullBody =
-      verticalState === "Jump" ||
-      verticalState === "Fall" ||
-      verticalState === "Roll";
+    const wantsFullBody = verticalState === "Jump" || verticalState === "Fall";
     const wantsUpperLand =
       verticalState === "Land" && this.upperBodyLandAction !== null;
 

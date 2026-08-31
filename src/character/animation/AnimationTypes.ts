@@ -1,7 +1,7 @@
 import * as THREE from "three";
 
 export type LocomotionState = "Idle" | "Walk" | "Run";
-export type VerticalState = "Jump" | "Fall" | "Land" | "Roll";
+export type VerticalState = "Jump" | "Fall" | "Land";
 export type AnimationState = LocomotionState | VerticalState;
 
 export type JumpVariant = "Idle" | "Move";
@@ -14,7 +14,6 @@ export interface AnimationClipMap {
   JumpMove?: THREE.AnimationClip;
   Fall?: THREE.AnimationClip;
   Land?: THREE.AnimationClip;
-  Roll?: THREE.AnimationClip;
 }
 
 export interface LocomotionWeights {
@@ -35,7 +34,6 @@ export const AnimationConfig = {
     fullBodyIn: 10.0,
     fullBodyOut: 12.0,
     jumpToFall: 0.6,
-    fallToRoll: 0.15,
     landIn: 14,
     landOut: 6,
   },
@@ -44,7 +42,6 @@ export const AnimationConfig = {
     minimumLandingSpeed: 0.3,
     fallVelocityThreshold: -1.5,
     minimumLandingHeight: 0.12,
-    minimumRollHeight: 1.5,
     minimumLandHoldTime: 0.22,
     jumpMoveThreshold: 0.1,
   },
